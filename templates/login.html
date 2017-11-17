@@ -1,0 +1,33 @@
+<html>
+<head>
+	<title>Login | PriCoSha</title>
+	<style>
+		label,input { 
+			display:block; 
+		}
+		label { 
+			margin-bottom: 10px; 
+		}
+		input { 
+			text-align: center; 
+		}
+	</style>
+</head>
+<body>
+	<center>
+	<h1 style="color:red">PriCoSha</h1>
+<form action="/loginAuth" method="POST">
+	<label><input type="text" name = "username" placeholder="username" required/></label>
+	<label><input type="password" name = "password" placeholder="password" required/></label>
+	<label><input type="submit" value = Login /></label>
+	{% if error %}
+		<p class="error"><strong>Error:</strong> {{error}}</p>
+	{% endif %}
+</form>
+
+<a href="/">Back</a>
+</center>
+</body>
+
+
+</html>

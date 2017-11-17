@@ -1,0 +1,63 @@
+<html>
+<head>
+	<title>Register | PriCoSha</title>
+	<style>
+		label,input { 
+			display:block; 
+		}
+		label { 
+			margin-bottom: 10px; 
+		}
+		label,button { 
+			font-size: 200%;
+			display: block;
+			width:150px;
+		}
+		button {
+		    background-color: #04859D;
+		    border: none;
+		    color: white;
+		    padding: 15px 32px;
+		    text-align: center;
+		    display: inline-block;
+		    font-size: 18px;
+		    margin-bottom: 10px;
+		}
+		input[type=text] { 
+			text-align: center; 
+		}
+		input[type=password]{
+			text-align: center;
+		}
+		input[type=submit]{
+			background-color: #04859D;
+		    border: none;
+		    color: white;
+		    padding: 15px 32px;
+		    text-align: center;
+		    display: inline-block;
+		    font-size: 18px;
+		    margin-bottom: 10px;
+		}
+	</style>
+</head>
+<body>
+	<center>
+		<h1>PriCoSha</h1>
+		<form action="/registerAuth" method="POST">
+			<input type="text" name = "username" placeholder="username" required/> </br>
+			<input type="password" name = "password" placeholder="password" required/></br>
+			<input type="text" name = "first_name" placeholder="First Name" required/></br>
+			<input type="text" name = "last_name" placeholder="Last Name" required/></br> 
+			<input type="submit" value = Register />
+			{% if error %}
+				<p class="error"><strong>Error:</strong> {{error}}</p>
+			{% endif %}
+		</form>
+
+		<a href="/">Go back</a>
+	</center>
+</body>
+
+
+</html>

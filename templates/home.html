@@ -1,13 +1,57 @@
 <html>
 <head>
 	<title>Home | PriCoSha</title>
+	<style>
+		label,button { 
+			font-size: 200%;
+			display: block;
+			width:150px;
+		}
+		button {
+		    background-color: #04859D;
+		    border: none;
+		    color: white;
+		    padding: 15px 32px;
+		    text-align: center;
+		    display: inline-block;
+		    font-size: 18px;
+		    margin-bottom: 10px;
+		}
+	</style>
 </head>
 <body>
 	<center>
+		<h1>Welcome {{username}}</h1> 
+		<a href="/logout"><button type="submit">Logout</button></a>
+		<a href="/edit_fg"><button type="submit">Create</button></a>
+		
 		<form action="/post" method="POST">
-			<h1>Welcome {{username}}</h1> 
-			<input type="text" name = "blog" placeholder="post" required/> </br>
-			<input type="submit" value = Post />
+
+			<pre>  Public | Private <br></pre>
+
+			<input type="radio" name="visibility" id="True" value="True" required>
+			<input type="radio" name="visibility" id="False" value="False" onclick="document.getElementById('FG').focus()"><br>
+
+			<input type ="text" name="group" id="FG" placeholder="Friend Group" style="text-align: center" onclick="document.getElementById('False').checked=true"> <br>
+			<input type="url" name="file" placeholder="Link" id="path" style="text-align: center"><br>
+			<input type="text" name = "blog" placeholder="Post" style="text-align: center" required/><br>
+
+			<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+			<script>
+				$('input[name="visibility"]').change(function () {
+					if($("#False").is(':checked')) {
+						$('#FG').attr('required', true);
+					} else {
+						$('#FG').removeAttr('required');
+					}
+				});
+			</script>
+
+			<input type="submit" value = Post>
+
+			{% if error %}
+				<p class="error"><strong>Error:</strong> {{error}} </p>
+			{% endif %}
 		</form>
 
 		<style type="text/css">
@@ -17,17 +61,30 @@
 		</style>
 
 		<table>
+			<th>ID</th>
+			<th>Posted By</th>
 			<th>Time</th>
-			<th>Post</th>
+			<th>Title</th>
+			<th>Link</th>
+			<th>Friend Group</th>
 
 		{% for line in posts %}
 			<tr>
-				<td>{{line.group_name}}</td>
+				<td><center>{{line.id}}</center></td>
+				<td><center>{{line.username}}</center></td>
+				<td><center>{{line.timest}}</center></td>
+				<td><center>{{line.content_name}}</center></td>
+				{% if line.file_path is not none %}
+					<td><center><a href={{line.file_path}}>{{line.file_path}}</a></center></td>
+				{% endif %}
+				{% if line.group_name is not none %}
+					<td><center>{{line.group_name}}</center></td>
+				{% endif %}
 			</tr>
 		{% endfor %}
 		</table>
 
-		<a href="/logout">Logout</a>
+		</br>
 	</center>
 </body>
 

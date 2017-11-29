@@ -1,0 +1,74 @@
+<html>
+<head>
+	<title>Create | PriCoSha</title>
+	<style>
+		div.tab {
+		    overflow: hidden;
+		    border: 1px solid #ccc;
+		    background-color: #f1f1f1;
+		}
+		div.tab button {
+		    background-color: inherit;
+		    float: left;
+		    border: none;
+		    outline: none;
+		    cursor: pointer;
+		    padding: 14px 16px;
+		    transition: 0.3s;
+		    font-size: 17px;
+		    display: inline-block;
+		}
+		div.tab button:hover {
+		    background-color: #ddd;
+		}
+		div.tab button.active {
+		    background-color: #ccc;
+		}
+		.tabcontent {
+		    display: none;
+		    padding: 6px 12px;
+		    border: 1px solid #ccc;
+		    border-top: none;
+		}
+	</style>
+</head>
+<body>
+	<form action="/create_fg" method="POST">
+		<div class="tab">
+		  <button class="tablinks" onclick="openTab(event, 'Create')">Create</button>
+		</div>
+		<div id="Create" class="tabcontent">
+				
+		</div>
+	</form>
+	
+	<div class="tab">
+	  <button class="tablinks" onclick="openTab(event, 'Add')">Add Person</button>
+	</div>
+	<div id="Add" class="tabcontent">
+
+	</div>
+
+	<script>
+		function openTab(evt, name) {
+		    var i, tabcontent, tablinks;
+		    tabcontent = document.getElementsByClassName("tabcontent");
+		    for (i = 0; i < tabcontent.length; i++) {
+		        tabcontent[i].style.display = "none";
+		    }
+		    tablinks = document.getElementsByClassName("tablinks");
+		    for (i = 0; i < tablinks.length; i++) {
+		        tablinks[i].className = tablinks[i].className.replace(" active", "");
+		    }
+		    document.getElementById(name).style.display = "block";
+		    evt.currentTarget.className += " active";
+		}
+	</script>
+	<center>
+		<h1>Friend Groups</h1>
+		{% for line in group_list %}
+			<p>{{line.group_name}}</p>
+		{% endfor %}
+	</center>
+</body>
+</html>

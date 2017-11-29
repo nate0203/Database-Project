@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, session, url_for, redirect
 import pymysql.cursors
 import hashlib
-import datetime, time
+import datetime
 
 app = Flask(__name__)
 
@@ -25,6 +25,7 @@ def loginAuth():
 	#grabs information from the forms
 	username = request.form['username']
 	password = request.form['password']
+	session['error'] = None
 	hash_password = hashlib.sha1(password)
 
 	#cursor used to send queries
@@ -83,17 +84,88 @@ def registerAuth():
 @app.route('/home')
 def home():
 	username = session['username']
+	error = session['error']
+	session['error'] = None
 	cursor = conn.cursor();
-	query = 'SELECT group_name FROM Member WHERE username = %s'
+	query = 'SELECT * FROM Content NATURAL LEFT JOIN Share WHERE username = %s ORDER BY timest DESC'
 	cursor.execute(query, (username))
 	data = cursor.fetchall()
 	cursor.close()
-	return render_template('home.html', username=username, posts=data)
+	if error == None:
+		return render_template('home.html', username=username, posts=data)
+	else:
+		return render_template('home.html', username=username, posts=data, error=error)
 
 @app.route('/logout')
 def logout():
 	session.pop('username')
+	session.pop('error')
 	return redirect('/')
+
+@app.route('/post', methods=['GET','POST'])
+def post():
+	item = request.form['blog']
+	group = request.form['group']
+	visibility = request.form['visibility']
+	username = session['username']
+	path = request.form['file']
+	timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+	cursor = conn.cursor()
+
+	if visibility == "True":
+		visibility = True
+	else:
+		visibility = False
+		query = 'SELECT group_name FROM Member WHERE username = %s'
+		cursor.execute(query, username)
+		group_list = cursor.fetchall()
+		if group not in group_list:
+			error = 'This FriendGroup does not exist.'
+			session['error'] = error
+			cursor.close()
+			return redirect(url_for('home'))
+			# need redirect to error page or home.html withall info
+
+	#false -> private, has a friendgroup associated with it
+	#true -> public to all friends
+
+	ins = 'INSERT INTO Content (username, timest, file_path, content_name, public) VALUES (%s, %s, %s, %s, %s)'
+	if path != '':
+		cursor.execute(ins, (username, timestamp, path, item, visibility))
+	else:
+		cursor.execute(ins, (username, timestamp, path, item, visibility))
+	conn.commit();
+
+	#if not public content, add to associated friend group
+	#if(visibility == 'false'):
+		#don't know how to query this to get the specific content ID for the foreign key constraint
+		#ins = 'INSERT INTO Share'
+
+	if not visibility:
+		query = 'SELECT id FROM Content WHERE timest = %s AND username = %s'
+		cursor.execute(query, (timestamp, username))
+		content_ID = cursor.fetchall()
+		print timestamp
+		print username
+		print content_ID[0].get('id')
+		ins = 'INSERT INTO Share VALUES (%s, %s, %s)'
+		cursor.execute(ins, (content_ID[0].get('id'), group, username))
+		conn.commit()
+
+	#selects any content that the user has posted, obviously needs changing
+	query = 'SELECT content_name FROM Content WHERE username = %s'
+	cursor.execute(query, (username))
+	data = cursor.fetchall()
+	cursor.close()
+	return redirect(url_for('home'))
+
+@app.route('/edit_fg', methods=['GET', 'POST'])
+def edit_fg():
+	return render_template('friendgroup.html')
+
+#@app.route('/create_fg', methods=['GET', 'POST'])
+#def create_fg():
+	
 
 app.secret_key = 'some key that you will never guess'
 #Run the app on localhost port 5000

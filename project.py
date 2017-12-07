@@ -182,6 +182,49 @@ def post():
 	cursor.close()
 	return redirect(url_for('home'))
 
+@app.route('/user/userid=<user>', methods=['GET', 'POST'])
+def view_user(user):
+	cursor = conn.cursor()
+	query = 'SELECT count(*) AS num_posts FROM Content WHERE username = %s'
+	cursor.execute(query, (user))
+	countp = cursor.fetchall()
+	nump = countp[0]['num_posts']
+	print nump
+
+	query = 'SELECT min(timest) AS first_post FROM Content WHERE username = %s'
+	cursor.execute(query, (user))
+	f_post = cursor.fetchall()
+
+	query = 'SELECT max(timest) AS last_post FROM Content WHERE username = %s'
+	cursor.execute(query, (user))
+	l_post = cursor.fetchall()
+
+	query = 'SELECT count(*) AS num_groups FROM FriendGroup WHERE username = %s'
+	cursor.execute(query, (user))
+	countg = cursor.fetchall()
+
+	query = 'SELECT count(*) AS num_pub FROM Content WHERE username = %s AND public=true'
+	cursor.execute(query, (user))
+	countpriv = cursor.fetchall()
+	num_pub = countpriv[0]['num_pub']
+	print num_pub
+	percent = (((float)(num_pub))/(nump))*100
+	percent = '%.2f'%(percent)
+
+	query = 'SELECT count(DISTINCT username) AS num_f FROM Member WHERE username_creator = %s'
+	cursor.execute(query, (user))
+	num_friends = cursor.fetchall()
+
+	cursor.close()
+	return render_template('user.html', user=user, countp=countp, f_post=f_post, l_post=l_post, countg=countg, percent=percent, num_friends=num_friends)
+
+#@app.route('/fg/group=<group>', methods=['GET','POST'])
+#def view_group(group):
+#	username = session['username']
+#	cursor = conn.cursor()
+#	query = 'SELECT '
+#	return 5
+
 @app.route('/post/content_id=<id>', methods=['GET', 'POST'])
 def view_post(id):
 	session['id'] = id

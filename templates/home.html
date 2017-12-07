@@ -23,7 +23,7 @@
 	<center>
 		<h1>Welcome {{username}}</h1> 
 		<a href="/logout"><button type="submit">Logout</button></a>
-		<a href="/friendgroup"><button type="submit">Create</button></a>
+		<a href="/friendgroup"><button type="submit">Manage</button></a>
 		
 		<form action="/post" method="POST">
 
@@ -78,7 +78,7 @@
 		{% for line in posts %}
 			<tr>
 				<td><center><a href="{{ url_for('view_post', id=line.id) }}">{{line.id}}</a></center></td>
-				<td><center>{{line.username}}</center></td>
+				<td><center><a href="{{ url_for('view_user', user=line.username) }}">{{line.username}}</a></center></td>
 				<td><center>{{line.timest}}</center></td>
 				<td><center>{{line.content_name}}</center></td>
 				{% if line.file_path is not none %}

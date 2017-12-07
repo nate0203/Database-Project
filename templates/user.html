@@ -1,0 +1,38 @@
+<html>
+<head>
+	<title>View User {{user}} | PriCoSha</title>
+	<style>
+		label,button { 
+			font-size: 200%;
+			display: block;
+			width:150px;
+		}
+		button {
+		    background-color: #04859D;
+		    border: none;
+		    color: white;
+		    padding: 15px 32px;
+		    text-align: center;
+		    display: inline-block;
+		    font-size: 18px;
+		    margin-bottom: 10px;
+		}
+	</style>
+</head>
+<body>
+	<center>
+		<h2><u>User {{user}}'s profile</u></h2>
+		<h5>Number of posts: {{countp[0].num_posts}}</h5>
+		<h5>First post: {{f_post[0].first_post}}</h5>
+		<h5>Last post: {{l_post[0].last_post}}</h5>
+		<h5>Number of Friend Groups: {{countg[0].num_groups}}</h5>
+		<h5>Number of Friends: {{num_friends[0].num_f}}</h5>
+		<h5>Percentage of Posts Made Public: {{percent}}%</h5>
+		<br>
+		<a href="{{ url_for('add_to_fg') }}">Add {{user}} to a Friend Group!</a>
+		<br>
+		<br>
+		<a href="/home">Go Home</a>
+	</center>
+</body>
+</html>

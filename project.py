@@ -218,13 +218,6 @@ def view_user(user):
 	cursor.close()
 	return render_template('user.html', user=user, countp=countp, f_post=f_post, l_post=l_post, countg=countg, percent=percent, num_friends=num_friends)
 
-#@app.route('/fg/group=<group>', methods=['GET','POST'])
-#def view_group(group):
-#	username = session['username']
-#	cursor = conn.cursor()
-#	query = 'SELECT '
-#	return 5
-
 @app.route('/post/content_id=<id>', methods=['GET', 'POST'])
 def view_post(id):
 	session['id'] = id
@@ -421,6 +414,103 @@ def new_fg():
 	conn.commit()
 	cursor.close()
 	return redirect(url_for('home'))
+
+@app.route('/remove_friend')
+def remove_friend():
+	username = session['username']
+	cursor = conn.cursor();
+	query = 'SELECT username FROM Person WHERE username!=%s'
+	cursor.execute(query, (username))
+	data = cursor.fetchall()
+	cursor.close()
+
+	temp = []
+	friend_list = []
+
+	for item in data:
+		temp.append(item.values())
+	for i in range(len(temp)):
+		friend_list.append(temp[i][0])
+		print friend_list[i]
+
+	cursor = conn.cursor()
+	query = 'SELECT group_name FROM FriendGroup WHERE username = %s'
+	cursor.execute(query, username)
+	data2 = cursor.fetchall()
+	temp = []
+	group_list = []
+
+	for item in data2:
+		temp.append(item.values())
+	for i in range(len(temp)):
+		group_list.append(temp[i][0])
+		print group_list[i]
+
+	cursor.close()
+	return render_template('remove_friend.html', group_list=group_list, friend_list=friend_list)
+
+@app.route('/remove', methods=['GET', 'POST'])
+def remove():
+	username = session['username']
+	group = request.form['group']
+	friend = request.form['friend']
+	cursor = conn.cursor()
+
+	query = 'SELECT username FROM Member WHERE group_name = %s AND username_creator = %s'
+	cursor.execute(query, (group, username))
+	data = cursor.fetchall()
+	query = 'SELECT group_name FROM FriendGroup WHERE username = %s'
+	cursor.execute(query, (username))
+	data2 = cursor.fetchall()
+	query = 'SELECT username FROM Person WHERE username!=%s'
+	cursor.execute(query, (username))
+	data3 = cursor.fetchall()
+
+	cursor.close()
+
+	cursor = conn.cursor()
+
+	temp = []
+	friend_list = []
+	group_list = []
+	total_fl = []
+
+	for item in data:
+		temp.append(item.values())
+	for i in range(len(temp)):
+		friend_list.append(temp[i][0])
+		print friend_list[i]
+	temp[:] = []
+	for item in data2:
+		temp.append(item.values())
+	for i in range(len(temp)):
+		group_list.append(temp[i][0])
+	temp[:] = []
+	for item in data3:
+		temp.append(item.values())
+	for i in range(len(temp)):
+		total_fl.append(temp[i][0])
+
+	if friend not in friend_list:
+		err = friend + ' is not in ' + group
+		session['err'] = err
+		cursor.close()
+		return render_template('remove_friend.html', group_list=group_list, friend_list=total_fl, error=err)
+	if len(friend_list) == 2:
+		err = group + " only has two members! Can't remove."
+		session['err'] = err
+		cursor.close()
+		return render_template('remove_friend.html', group_list=group_list, friend_list=total_fl, error=err)
+
+	rm = 'DELETE FROM Member WHERE username = %s'
+	cursor.execute(rm, (friend))
+	conn.commit()
+	cursor.close()
+
+	success = friend + ' was removed from ' + group + '!'
+	session['success'] = success
+
+	return render_template('remove_friend.html', group_list=group_list, friend_list=total_fl, success=success)
 
 app.secret_key = 'some key that you will never guess'
 #Run the app on localhost port 5000

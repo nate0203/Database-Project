@@ -1,0 +1,47 @@
+<html>
+<head>
+	<title>Create FriendGroup | PriCoSha</title>
+	<style>
+		label,button { 
+			font-size: 200%;
+			display: block;
+			width:150px;
+		}
+		button {
+		    background-color: #04859D;
+		    border: none;
+		    color: white;
+		    padding: 15px 32px;
+		    text-align: center;
+		    display: inline-block;
+		    font-size: 18px;
+		    margin-bottom: 10px;
+		}
+	</style>
+</head>
+<body>
+	<center>
+		<h2>Create a Friend Group</h2>
+		<form action="/new_fg" method="POST">
+			<input type="text" name="newgroup" id="FG" placeholder="New FG Name" style ="text-align: center" required> <br><br>
+			<input type="text" name="description" id="FG" placeholder="Description" style ="text-align: center" required> <br><br>
+
+			<h4>Select at least 2 friends</h4>
+			<select name="friend1">
+                        {% for item in friend_list %}
+                        <option value="{{item}}" selected>{{item}}</option>
+                        {% endfor %}
+            </select> <t>
+            <select name="friend2">
+                        {% for item in friend_list %}
+                        <option value="{{item}}" selected>{{item}}</option>
+                        {% endfor %}
+            </select> 
+            {% if error %}
+				<p class="error"><strong>Error:</strong> {{error}} </p>
+			{% endif %}<br><br>
+            <input type="submit" value = Submit><br><br>
+		</form>
+		<a href="/home">Go Home</a>
+	</center>
+</body>

@@ -1,0 +1,82 @@
+<html>
+<head>
+	<title>Comments for ID = {{post[0].id}} | PriCoSha</title>
+	<style>
+		label,button { 
+			font-size: 200%;
+			display: block;
+			width:150px;
+		}
+		button {
+		    background-color: #04859D;
+		    border: none;
+		    color: white;
+		    padding: 15px 32px;
+		    text-align: center;
+		    display: inline-block;
+		    font-size: 18px;
+		    margin-bottom: 10px;
+		}
+	</style>
+</head>
+<body>
+	<center>
+		<h2>Post #{{post[0].id}}</h2>
+
+		<style type="text/css">
+			table, th, td{
+				border: 1px solid black;
+			}
+		</style>
+
+		<table>
+			<th>ID</th>
+			<th>Posted By</th>
+			<th>Time</th>
+			<th>Post</th>
+			<th>Link</th>
+			<th>Friend Group</th>
+
+		{% for line in post %}
+			<tr>
+				<td><center>{{line.id}}</center></td>
+				<td><center>{{line.username}}</center></td>
+				<td><center>{{line.timest}}</center></td>
+				<td><center>{{line.content_name}}</center></td>
+				{% if line.file_path is not none %}
+					<td><center><img src={{line.file_path}} height="250"></center></td>
+				{% endif %}
+				{% if line.group_name is not none %}
+					<td><center>{{line.group_name}}</center></td>
+				{% endif %}
+			</tr>
+		{% endfor %}
+		</table>
+
+		<br>
+		<br>
+
+		<table>
+			<th>Username</th>
+			<th>Comment</th>
+			<th>Time</th>
+
+		{% for line in comments %}
+			<tr>
+				<td><center>{{line.username}}</center></td>
+				<td><center>{{line.comment_text}}</center></td>
+				<td><center>{{line.timest}}</center></td>
+			</tr>
+		{% endfor %}
+		</table>
+		<br>
+		<form action="/comment" method="POST">
+			<input type="text" name = "Comment" placeholder="Post a comment!" style="text-align: center" required/><br><br>
+			<input type="submit" value=Submit>
+		</form>
+		<br>
+		<a href="/home">Go Home</a>
+
+	</center>
+</body>
+</html>

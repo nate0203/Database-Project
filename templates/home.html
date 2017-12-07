@@ -23,16 +23,23 @@
 	<center>
 		<h1>Welcome {{username}}</h1> 
 		<a href="/logout"><button type="submit">Logout</button></a>
-		<a href="/edit_fg"><button type="submit">Create</button></a>
+		<a href="/friendgroup"><button type="submit">Create</button></a>
 		
 		<form action="/post" method="POST">
 
 			<pre>  Public | Private <br></pre>
 
 			<input type="radio" name="visibility" id="True" value="True" required>
-			<input type="radio" name="visibility" id="False" value="False" onclick="document.getElementById('FG').focus()"><br>
+			<input type="radio" name="visibility" id="False" value="False" onclick="document.getElementById('FG').focus()"><br><br>
 
-			<input type ="text" name="group" id="FG" placeholder="Friend Group" style="text-align: center" onclick="document.getElementById('False').checked=true"> <br>
+			Friend Group:
+			<select name="group">
+                        {% for item in group_list %}
+                        <option value="{{item}}" selected>{{item}}</option>
+                        {% endfor %}
+            </select> <br><br>
+
+			
 			<input type="url" name="file" placeholder="Link" id="path" style="text-align: center"><br>
 			<input type="text" name = "blog" placeholder="Post" style="text-align: center" required/><br>
 
@@ -64,18 +71,18 @@
 			<th>ID</th>
 			<th>Posted By</th>
 			<th>Time</th>
-			<th>Title</th>
+			<th>Post</th>
 			<th>Link</th>
 			<th>Friend Group</th>
 
 		{% for line in posts %}
 			<tr>
-				<td><center>{{line.id}}</center></td>
+				<td><center><a href="{{ url_for('view_post', id=line.id) }}">{{line.id}}</a></center></td>
 				<td><center>{{line.username}}</center></td>
 				<td><center>{{line.timest}}</center></td>
 				<td><center>{{line.content_name}}</center></td>
 				{% if line.file_path is not none %}
-					<td><center><a href={{line.file_path}}>{{line.file_path}}</a></center></td>
+					<td><center><img src={{line.file_path}} height="250"></center></td>
 				{% endif %}
 				{% if line.group_name is not none %}
 					<td><center>{{line.group_name}}</center></td>

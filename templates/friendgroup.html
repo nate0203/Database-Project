@@ -42,12 +42,23 @@
 		</div>
 	</form>
 	
-	<div class="tab">
-	  <button class="tablinks" onclick="openTab(event, 'Add')">Add Person</button>
-	</div>
-	<div id="Add" class="tabcontent">
+	<form action="/add_to_fg" method="POST">
+		<div class="tab">
+	  	 <button class="tablinks" onclick="openTab(event, 'Add')">Add Person</button>
+		</div>
+		<div id="Add" class="tabcontent">
 
-	</div>
+		</div>
+	</form>
+
+	<form action="/home">
+		<div class="tab">
+	  	 <button class="tablinks" onclick="openTab(event, 'Home')">Home</button>
+		</div>
+		<div id="Home" class="tabcontent">
+
+		</div>
+	</form>
 
 	<script>
 		function openTab(evt, name) {

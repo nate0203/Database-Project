@@ -87,6 +87,8 @@ def home():
 	error = session['error']
 	session['error'] = None
 	cursor = conn.cursor();
+
+	#post column gets cut off for long text
 	query = 'SELECT * FROM Content NATURAL LEFT JOIN Share WHERE username = %s ORDER BY timest DESC'
 	cursor.execute(query, (username))
 	data = cursor.fetchall()
@@ -158,7 +160,7 @@ def post():
 	creator = ''
 	pos = group.rfind('@')
 	if pos != -1:
-		creator = group[pos:]
+		creator = group[pos+1:]
 		group = group[0:pos-1]
 
 	if visibility == "True":
@@ -175,17 +177,14 @@ def post():
 		for item in data:
 			temp.append(item.values())
 		for i in range(len(temp)):
-			friend_list.append(temp[i][0])
-			print friend_list[i]
+			group_list.append(temp[i][0])
+			print group_list[i]
 
 	#false -> private, has a friendgroup associated with it
 	#true -> public to all friends
 
 	ins = 'INSERT INTO Content (username, timest, file_path, content_name, public) VALUES (%s, %s, %s, %s, %s)'
-	if path != '':
-		cursor.execute(ins, (username, timestamp, path, item, visibility))
-	else:
-		cursor.execute(ins, (username, timestamp, path, item, visibility))
+	cursor.execute(ins, (username, timestamp, path, item, visibility))
 	conn.commit();
 
 	if not visibility:
@@ -196,7 +195,10 @@ def post():
 		print username
 		print content_ID[0].get('id')
 		ins = 'INSERT INTO Share VALUES (%s, %s, %s)'
-		cursor.execute(ins, (content_ID[0].get('id'), group, username))
+		if creator == '':
+			cursor.execute(ins, (content_ID[0].get('id'), group, username))
+		else:
+			cursor.execute(ins, (content_ID[0].get('id'), group, creator))
 		conn.commit()
 
 	#selects any content that the user has posted, obviously needs changing

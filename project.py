@@ -101,7 +101,37 @@ def home():
 		temp.append(item.values())
 	for i in range(len(temp)):
 		group_list.append(temp[i][0])
-		print group_list[i]
+		#print group_list[i]
+
+	temp[:] = []
+	query = 'SELECT group_name FROM Member WHERE username = %s'
+	cursor.execute(query, username)
+	data3 = cursor.fetchall()
+	member_list = []
+
+	query = 'SELECT username_creator FROM Member WHERE username = %s'
+	cursor.execute(query, username)
+	data4 = cursor.fetchall()
+	creator_list = []
+
+	for item in data3:
+		temp.append(item.values())
+	for i in range(len(temp)):
+		member_list.append(temp[i][0])
+		print member_list[i]
+
+	temp[:] = []
+
+	for item in data4:
+		temp.append(item.values())
+	for i in range(len(temp)):
+		creator_list.append(temp[i][0])
+
+	for i in range(len(creator_list)):
+		member_list[i] = member_list[i] + ' @' + creator_list[i]
+
+	for i in range(len(member_list)):
+		group_list.append(member_list[i])
 
 	cursor.close()
 	if error == None:
@@ -125,6 +155,12 @@ def post():
 	timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 	cursor = conn.cursor()
 
+	creator = ''
+	pos = group.rfind('@')
+	if pos != -1:
+		creator = group[pos:]
+		group = group[0:pos-1]
+
 	if visibility == "True":
 		visibility = True
 	else:
@@ -142,13 +178,6 @@ def post():
 			friend_list.append(temp[i][0])
 			print friend_list[i]
 
-		#if group not in group_list:
-			#error = 'This FriendGroup does not exist.'
-			#session['error'] = error
-			#cursor.close()
-			#return redirect(url_for('home'))
-			# need redirect to error page or home.html withall info
-
 	#false -> private, has a friendgroup associated with it
 	#true -> public to all friends
 
@@ -158,11 +187,6 @@ def post():
 	else:
 		cursor.execute(ins, (username, timestamp, path, item, visibility))
 	conn.commit();
-
-	#if not public content, add to associated friend group
-	#if(visibility == 'false'):
-		#don't know how to query this to get the specific content ID for the foreign key constraint
-		#ins = 'INSERT INTO Share'
 
 	if not visibility:
 		query = 'SELECT id FROM Content WHERE timest = %s AND username = %s'

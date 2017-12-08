@@ -32,13 +32,12 @@
 			<input type="radio" name="visibility" id="True" value="True" required>
 			<input type="radio" name="visibility" id="False" value="False" onclick="document.getElementById('FG').focus()"><br><br>
 
-			Friend Group:
+			Friend Group You Own:
 			<select name="group">
-                        {% for item in group_list %}
-                        <option value="{{item}}" selected>{{item}}</option>
-                        {% endfor %}
+                {% for item in group_list %}
+                <option value="{{item}}" selected>{{item}}</option>
+                {% endfor %}
             </select> <br><br>
-
 			
 			<input type="url" name="file" placeholder="Link" id="path" style="text-align: center"><br>
 			<input type="text" name = "blog" placeholder="Post" style="text-align: center" required/><br>
@@ -55,6 +54,7 @@
 			</script>
 
 			<input type="submit" value = Post>
+
 
 			{% if error %}
 				<p class="error"><strong>Error:</strong> {{error}} </p>

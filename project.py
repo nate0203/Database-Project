@@ -7,7 +7,7 @@ app = Flask(__name__)
 
 conn = pymysql.connect(host='localhost',
                        user='root',
-                       password='root',
+                       password='',
                        db='pcs',
                        charset='utf8',
                        cursorclass=pymysql.cursors.DictCursor)
@@ -89,8 +89,15 @@ def home():
 	cursor = conn.cursor();
 
 	#post column gets cut off for long text
-	query = 'SELECT * FROM Content NATURAL LEFT JOIN Share WHERE username = %s ORDER BY timest DESC'
-	cursor.execute(query, (username))
+	#query = 'SELECT * FROM Content NATURAL LEFT JOIN Share WHERE username = %s ORDER BY timest DESC'
+#SELECT * 
+#FROM content LEFT JOIN share ON content.id = share.id
+#WHERE content.username = 'qwerty' OR 
+#(share.username, share.group_name) IN (SELECT member.username_creator, member.group_name
+#FROM member RIGHT JOIN share on (member.group_name = share.group_name AND member.username_creator = share.username)
+#WHERE member.username = 'qwerty')
+	query = 'SELECT * FROM Content LEFT JOIN Share ON content.id = share.id WHERE content.username = %s OR (share.username, share.group_name) IN (SELECT member.username_creator, member.group_name FROM member RIGHT JOIN share on (member.group_name = share.group_name AND member.username_creator = share.username) WHERE member.username = %s) ORDER BY timest DESC'
+	cursor.execute(query, (username, username))
 	data = cursor.fetchall()
 
 	query = 'SELECT group_name FROM FriendGroup WHERE username = %s'
@@ -105,15 +112,18 @@ def home():
 		group_list.append(temp[i][0])
 		#print group_list[i]
 
+	'''
 	temp[:] = []
 	query = 'SELECT group_name FROM Member WHERE username = %s'
 	cursor.execute(query, username)
 	data3 = cursor.fetchall()
+	print data3
 	member_list = []
 
 	query = 'SELECT username_creator FROM Member WHERE username = %s'
 	cursor.execute(query, username)
 	data4 = cursor.fetchall()
+	print data4
 	creator_list = []
 
 	for item in data3:
@@ -134,6 +144,28 @@ def home():
 
 	for i in range(len(member_list)):
 		group_list.append(member_list[i])
+	'''
+
+	query = 'SELECT group_name, username_creator FROM Member WHERE username = %s AND username_creator != %s'
+	cursor.execute(query, (username, username))
+	data3 = cursor.fetchall()
+	print data3
+
+	tmp2 = []
+	creator_list = []
+	member_list = []
+	for item in data3:
+		tmp2.append(item.values())
+
+	for i in range(len(tmp2)):
+		member_list.append(tmp2[i][1])
+	for i in range(len(tmp2)):
+		creator_list.append(tmp2[i][0])
+
+	for i in range(len(creator_list)):
+		member_list[i] = member_list[i] + ' @' + creator_list[i]
+	for i in range(len(member_list)):
+		group_list.append(member_list[i])		
 
 	cursor.close()
 	if error == None:
@@ -174,15 +206,17 @@ def post():
 		temp = []
 		group_list = []
 
-		for item in data:
-			temp.append(item.values())
-		for i in range(len(temp)):
-			group_list.append(temp[i][0])
-			print group_list[i]
+		#for item in data:
+		#	temp.append(item.values())
+		#for i in range(len(temp)):
+		#	group_list.append(temp[i][0])
+		#	print group_list[i]
 
 	#false -> private, has a friendgroup associated with it
 	#true -> public to all friends
 
+	print group
+	print creator
 	ins = 'INSERT INTO Content (username, timest, file_path, content_name, public) VALUES (%s, %s, %s, %s, %s)'
 	cursor.execute(ins, (username, timestamp, path, item, visibility))
 	conn.commit();
@@ -249,8 +283,8 @@ def view_post(id):
 	session['id'] = id
 	username = session['username']
 	cursor = conn.cursor()
-	query = 'SELECT * FROM Content NATURAL LEFT JOIN Share WHERE username = %s AND id = %s ORDER BY timest DESC'
-	cursor.execute(query, (username,id))
+	query = 'SELECT * FROM Content WHERE id = %s'#NATURAL LEFT JOIN Share WHERE username = %s AND id = %s ORDER BY timest DESC'
+	cursor.execute(query, id)
 	data = cursor.fetchall()
 	cursor.close()
 
@@ -267,9 +301,10 @@ def comment():
 	id = session['id']
 	username = session['username']
 	text = request.form['Comment']
+	timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 	cursor = conn.cursor()
-	ins = 'INSERT INTO Comment (id, username, comment_text) VALUES (%s,%s,%s)'
-	cursor.execute(ins, (id, username, text))
+	ins = 'INSERT INTO Comment (id, username, timest, comment_text) VALUES (%s,%s,%s,%s)'
+	cursor.execute(ins, (id, username, timestamp, text))
 	conn.commit()
 	cursor.close()
 	return redirect(url_for('view_post', id=id))
@@ -437,6 +472,9 @@ def new_fg():
 	cursor.execute(ins, (friend_1, group, username))
 	conn.commit()
 	cursor.execute(ins, (friend_2, group, username))
+	conn.commit()
+	cursor.execute(ins, (username, group, username))
+	#cursor.execute(ins, (username, group, username))
 	conn.commit()
 	cursor.close()
 	return redirect(url_for('home'))

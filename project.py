@@ -282,19 +282,29 @@ def view_user(user):
 def view_post(id):
 	session['id'] = id
 	username = session['username']
+	error = session['error']
+	session['error'] = None
+
 	cursor = conn.cursor()
-	query = 'SELECT * FROM Content WHERE id = %s'#NATURAL LEFT JOIN Share WHERE username = %s AND id = %s ORDER BY timest DESC'
+	query = 'SELECT * FROM Content NATURAL JOIN Share WHERE id = %s'#NATURAL LEFT JOIN Share WHERE username = %s AND id = %s ORDER BY timest DESC'
 	cursor.execute(query, id)
 	data = cursor.fetchall()
+	#print data[0]['public']
 	cursor.close()
 
 	cursor = conn.cursor()
 	query = 'SELECT username, comment_text, timest FROM Comment WHERE id = %s ORDER BY timest DESC'
 	cursor.execute(query, (id))
 	data2 = cursor.fetchall()
+	
+	query = 'SELECT * FROM person'
+	cursor.execute(query)
+	data3 = cursor.fetchall()
 	cursor.close()
-
-	return render_template('comments.html', post=data, comments=data2)
+	if error == None:
+		return render_template('comments.html', post=data, comments=data2, person=data3)
+	else:
+		return render_template('comments.html', post=data, comments=data2, person=data3, error=error)
 
 @app.route('/comment', methods=['GET', 'POST'])
 def comment():
@@ -309,14 +319,111 @@ def comment():
 	cursor.close()
 	return redirect(url_for('view_post', id=id))
 
+@app.route('/tag', methods=['GET', 'POST'])
+def tagging():
+	id = session['id']
+	tagger = session['username']
+	tagged = request.form['friend']
+	timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+	status = False
+
+	cursor = conn.cursor()
+	query = 'SELECT * FROM content WHERE id = %s'
+	cursor.execute(query, id)
+	content = cursor.fetchall()
+
+	if content[0]['public'] == 0:
+		query = 'SELECT group_name FROM share WHERE id = %s'
+		cursor.execute(query, id)
+		data = cursor.fetchall()
+
+		query = 'SELECT username FROM member WHERE group_name = %s'
+		cursor.execute(query, data[0]['group_name'])
+		data = cursor.fetchall()
+
+		member_list = []
+		for i in range(len(data)):
+			member_list.append(data[i]['username'])
+
+		if tagged not in member_list:
+			session['error'] = tagged + " is not part of this friend group."
+			return redirect(url_for('view_post', id=id))
+
+	query = 'SELECT * FROM Tag WHERE id = %s AND username_taggee = %s'
+	cursor.execute(query, (id, tagged))
+	check = cursor.fetchall()
+
+	if check:
+		cursor.close()
+		return redirect(url_for('view_post', id=id))
+
+	if tagger == tagged:
+		status = True
+
+	ins = 'INSERT INTO Tag VALUES (%s, %s, %s, %s, %s)'
+	cursor.execute(ins, (id, tagger, tagged, timestamp, status))
+	data2 = cursor.fetchall()
+	conn.commit()
+	cursor.close()
+
+	return redirect(url_for('view_post', id=id))
+
+@app.route('/tag-log', methods=['GET', 'POST'])
+def tag_log():
+	username = session['username']
+
+	status = False
+	cursor = conn.cursor()
+	query = 'SELECT * FROM tag JOIN content ON tag.id = content.id WHERE username_taggee = %s AND status = %s ORDER BY tag.timest DESC'
+	cursor.execute(query, (username, status))
+	data = cursor.fetchall()
+
+	query = 'SELECT * FROM tag JOIN content ON tag.id = content.id WHERE username_taggee = %s AND status = %s ORDER BY content.timest DESC'
+	cursor.execute(query, (username, not status))
+	data2 = cursor.fetchall()
+	cursor.close()
+
+	return render_template('tag-log.html', tagging=data, approved=data2)
+
+@app.route('/edit_tag', methods=['GET', 'POST'])
+def edit_tag():
+	id = request.form['post_id']
+	username = session['username']
+	choice = request.form['action']
+	cursor = conn.cursor()
+
+
+	if choice == 'Accept':
+		print choice
+		add = True
+	if choice == 'Deny':
+		add = False
+
+	if add:
+		query = 'UPDATE tag SET status = %s WHERE id = %s AND username_taggee = %s'
+		cursor.execute(query, (True, id, username))
+		conn.commit()
+		cursor.close()
+	else:
+		query = 'DELETE FROM tag WHERE id = %s AND username_taggee = %s'
+		cursor.execute(query, (id, username))
+		conn.commit()
+		cursor.close()
+
+	return redirect(url_for('tag_log'))
+
+
 @app.route('/friendgroup')
 def friendgroups():
+	#username = session['username']
+	#cursor = conn.cursor()
+	#query = 'SELECT group_name, username_creator FROM member WHERE username = %s'
 	return render_template('friendgroup.html')
 
 @app.route('/add_to_fg', methods=['GET', 'POST'])
 def add_to_fg():
 	username = session['username']
-	cursor = conn.cursor();
+	cursor = conn.cursor()
 	
 	query = 'SELECT username FROM Person WHERE username!=%s'
 	cursor.execute(query, (username))
@@ -575,6 +682,61 @@ def remove():
 	session['success'] = success
 
 	return render_template('remove_friend.html', group_list=group_list, friend_list=total_fl, success=success)
+
+@app.route('/edit-profile', methods=['GET','POST'])
+def edit_profile():
+	error = session['error']
+	session['error'] = None
+
+	cursor = conn.cursor()
+	query = 'SELECT * FROM person WHERE username = %s'
+	cursor.execute(query, session['username'])
+	info = cursor.fetchall()
+	cursor.close()
+
+	if error == None:
+		return render_template('edit-profile.html', name=info)
+	else:
+		return render_template('edit-profile.html', name=info, error=error)
+
+@app.route('/change_name', methods=['GET', 'POST'])
+def change_name():
+	first_name = request.form['first_name']
+	last_name = request.form['last_name']
+
+	cursor = conn.cursor()
+	query = 'UPDATE person SET first_name = %s, last_name = %s WHERE username = %s'
+	cursor.execute(query, (first_name, last_name, session['username']))
+	conn.commit()
+	cursor.close()
+
+	return redirect(url_for('edit_profile'))
+
+@app.route('/change_pass', methods=['GET', 'POST'])
+def change_pass():
+	old_pass = request.form['old']
+	old_pass = hashlib.sha1(old_pass).hexdigest()
+	new_pass = request.form['new']
+	new_pass = hashlib.sha1(new_pass).hexdigest()
+
+	cursor = conn.cursor()
+	query = 'SELECT * FROM person WHERE username = %s'
+	cursor.execute(query, session['username'])
+	info = cursor.fetchall()
+
+	if info[0]['password'] != old_pass:
+		session['error'] = "Cannot complete. Password was incorrect."
+		return redirect(url_for('edit_profile'))
+
+	if old_pass == new_pass:
+		return redirect(url_for('edit_profile'))
+
+	query = 'UPDATE person SET password = %s WHERE username = %s'
+	cursor.execute(query, (new_pass, session['username']))
+	conn.commit()
+	cursor.close()
+
+	return redirect(url_for('edit_profile'))
 
 app.secret_key = 'some key that you will never guess'
 #Run the app on localhost port 5000

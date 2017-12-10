@@ -54,6 +54,20 @@
 		</table>
 
 		<br>
+		<form action="/tag" method="POST">
+			Tag A Friend:
+			<select name="friend">
+				{% for item in person %}
+					<option value={{item.username}} selected>{{item.username}}</option>
+				{% endfor %}
+			</select>
+			<input type="submit" value="Tag">
+		</form>
+		{% if error %}
+			<strong>Error: </strong>{{error}}
+		{% endif %}
+
+		<br>
 		<br>
 
 		<table>

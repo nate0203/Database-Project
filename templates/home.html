@@ -23,8 +23,10 @@
 	<center>
 		<h1>Welcome {{username}}</h1> 
 		<a href="/logout"><button type="submit">Logout</button></a>
-		<a href="/friendgroup"><button type="submit">Manage</button></a>
-		
+		<a href="/friendgroup"><button type="submit">Groups</button></a>
+		<a href="/tag-log"><button type="submit">Tags</button></a>
+		<a href="/edit_profile"><button type="submit">Settings</button></a>
+
 		<form action="/post" method="POST">
 
 			<pre>  Public | Private <br></pre>
@@ -32,15 +34,15 @@
 			<input type="radio" name="visibility" id="True" value="True" required>
 			<input type="radio" name="visibility" id="False" value="False" onclick="document.getElementById('FG').focus()"><br><br>
 
-			Friend Group You Own:
+			Friend Groups:
 			<select name="group">
                 {% for item in group_list %}
                 <option value="{{item}}" selected>{{item}}</option>
                 {% endfor %}
             </select> <br><br>
 			
-			<input type="url" name="file" placeholder="Link" id="path" style="text-align: center"><br>
-			<input type="text" name = "blog" placeholder="Post" style="text-align: center" required/><br>
+			<input type="url" name="file" placeholder="Link" id="path" style="text-align: center"><br><br>
+			<input type="text" name = "blog" placeholder="Post" style="text-align: center" required/><br><br>
 
 			<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 			<script>

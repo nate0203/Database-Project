@@ -1,0 +1,97 @@
+<html>
+<head>
+	<title> Profile | PriCoSha </title>
+	<style>
+	body {
+		font-family: Arial;
+	}
+	div.tab {
+	    overflow: hidden;
+	    border: 1px solid #ccc;
+	    background-color: #f1f1f1;
+	}
+	div.tab button {
+	    background-color: inherit;
+	    float: left;/
+	    border: none;
+	    outline: none;
+	    cursor: pointer;
+	    padding: 14px 16px;
+	    transition: 0.3s;
+	    font-size: 17px;
+	}
+	div.tab button:hover {
+	    background-color: #ddd;
+	}
+	div.tab button.active {
+	    background-color: #ccc;
+	}
+	.tabcontent {
+	    display: none;
+	    padding: 6px 12px;
+	    border: 1px solid #ccc;
+	    border-top: none;
+	}
+</style>
+</head>
+<body>
+	<center>
+		{% if error %}
+			<strong>Error: </strong>{{error}}
+		{% endif %}
+		<div class="tab">
+		  <button class="tablinks" onclick="openCity(event, 'Name')">Name</button>
+		  <button class="tablinks" onclick="openCity(event, 'Paris')">Password</button>
+		</div>
+
+		<form action="/change_name" method="POST">
+			<div id="Name" class="tabcontent">
+			  <h1>{{name[0].first_name}} {{name[0].last_name}}</h1>
+			  <h2>Change Name</h2>
+			  <input type="text" name="first_name" placeholder="First Name" style="text-align: center" required><br>
+			  <input type="text" name="last_name" placeholder="Last Name" style="text-align: center" required><br>
+			  <input type="submit" value="Change">
+			</div>
+		</form>
+
+		<form action="/change_pass" method="POST">
+			<div id="Paris" class="tabcontent">
+				<h2>Change Password</h2>
+				<input type="password" placeholder="Old Password" name="old" required><br>
+				<input type="password" placeholder="New Password" id="password" name="new" required><br>
+        		<input type="password" placeholder="Confirm Password" id="confirm_password" required><br>
+        		<button type="submit" class="pure-button pure-button-primary">Confirm</button>
+			</div>
+		</form>
+
+		<script>
+			function openCity(evt, cityName) {
+			    var i, tabcontent, tablinks;
+			    tabcontent = document.getElementsByClassName("tabcontent");
+			    for (i = 0; i < tabcontent.length; i++) {
+			        tabcontent[i].style.display = "none";
+			    }
+			    tablinks = document.getElementsByClassName("tablinks");
+			    for (i = 0; i < tablinks.length; i++) {
+			        tablinks[i].className = tablinks[i].className.replace(" active", "");
+			    }
+			    document.getElementById(cityName).style.display = "block";
+			    evt.currentTarget.className += " active";
+			}
+			var password = document.getElementById("password"), confirm_password = document.getElementById("confirm_password");
+			function validatePassword(){
+			  if(password.value != confirm_password.value) {
+			    confirm_password.setCustomValidity("Passwords Don't Match");
+			  } else {
+			    confirm_password.setCustomValidity('');
+			  }
+			}
+			password.onchange = validatePassword;
+			confirm_password.onkeyup = validatePassword;
+		</script>
+		     
+		<br>
+		<a href="/home">Home</a>
+	</center>
+</body>
+</html>

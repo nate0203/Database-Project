@@ -1,0 +1,54 @@
+<html>
+<head>
+	<title>Tags | PriCoSha</title>
+	<style>
+		th, td {
+			padding-right: 15px;
+		}
+	</style>
+</head>
+<body>
+	<center>
+		<h1>Pending Tags</h1>
+		<table>
+			<th>ID</th>
+			<th>Poster</th>
+			<th>Tagger</th>
+
+			{% for line in tagging %}
+				<tr>
+					<td><center>{{line.id}}</center></td>
+					<td><center>{{line.username}}</center></td>
+					<td><center>{{line.username_tagger}}</center></td>
+				</tr>
+			{% endfor %}
+		</table>
+
+		<form action = "/edit_tag" method = "POST">
+			ID:
+			<select name="post_id">
+				{% for line in tagging %}
+					<option value="{{line.id}}" selected>{{line.id}}</option>
+				{% endfor %}
+			</select>
+			<input align="left" type="submit" name="action" value="Accept">
+			<input align="right" type="submit" name="action" value="Deny">
+		</form>
+
+		<h1>Approved Tags</h1>
+		<table>
+			<th>ID</th>
+			<th>Poster</th>	
+
+			{% for line in approved %}
+				<tr>
+					<td><center>{{line.id}}</center></td>
+					<td><center>{{line.username}}</center></td>
+				</tr>
+			{% endfor %}			
+		</table>
+
+		<a href="/home">Home</a>
+	</center>
+</body>
+</html>

@@ -79,12 +79,14 @@
 		<h1>Approved Tags</h1>
 		<table>
 			<th>ID</th>
-			<th>Poster</th>	
+			<th>Original Poster</th>	
+			<th>Tagged By</th>
 
 			{% for line in approved %}
 				<tr>
 					<td><center><a href="{{url_for('view_post', id=line.id)}}">{{line.id}}</a></center></td>
 					<td><center><a href="{{url_for('view_user', user=line.username)}}">{{line.username}}</a></center></td>
+					<td><center><a href="{{url_for('view_user', user=line.username_tagger)}}">{{line.username_tagger}}</a></center></td>
 				</tr>
 			{% endfor %}			
 		</table><br>

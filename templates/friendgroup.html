@@ -118,8 +118,13 @@
 				<td><a href="{{url_for('view_user', user=line.username_creator)}}">{{line.username_creator}}</a></td>
 				<td>
 					{% for member in member_list %}
-						{% if member.group_name == line.group_name %}
-							<a href="{{url_for('view_user', user=member.username)}}">{{member.username}}</a>  ||   
+						{% if member.group_name == line.group_name and member.username_creator == line.username_creator %}
+							<a href="{{url_for('view_user', user=member.username)}}">{{member.first_name}} {{member.last_name}}</a>  ||   
+						{% endif %}
+					{% endfor %}
+					{% for member in owner %}
+						{% if member.username == line.username_creator and member.group_name == line.group_name %}
+							<a href="{{url_for('view_user', user=member.username)}}">{{member.first_name}} {{member.last_name}}</a>
 						{% endif %}
 					{% endfor %}
 				</td>

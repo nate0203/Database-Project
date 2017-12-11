@@ -61,7 +61,9 @@
 		<h5>Number of Friend Groups:  {{countg[0].num_groups}}</h5>
 		<h5>Number of Friends:  {{num_friends[0].num_f}}</h5>
 		<h5>Percentage of Posts Made Public:  {{percent}}%</h5>
+		{% if other %}
 		<div class="act"><a href="{{ url_for('add_to_fg') }}">Add {{user}} to a Friend Group!</a></div>
+		{% endif %}
 		<br>
 		<br>
 		<div class="act"><a href="/home">Go Home</a></div>

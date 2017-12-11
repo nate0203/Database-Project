@@ -12,10 +12,12 @@ conn = pymysql.connect(host='localhost',
                        charset='utf8',
                        cursorclass=pymysql.cursors.DictCursor)
 
+# welcome page for PriCoSha
 @app.route('/')
 def welcome():
 	return render_template('welcome.html')
 
+# login page for PriCoSha
 @app.route('/login')
 def login():
 	if 'error' in session:
@@ -29,37 +31,32 @@ def login():
 	else:
 		return render_template('login.html', error=error)
 
+# check if user information for login is valid
 @app.route('/loginAuth', methods=['GET', 'POST'])
 def loginAuth():
-	#grabs information from the forms
 	username = request.form['username']
 	password = request.form['password']
-	print "CCCCCC"
 	session['error'] = None
-	hash_password = hashlib.sha1(password)
+	hash_password = hashlib.md5(password)
 
-	#cursor used to send queries
+	# query for correct username and password
 	cursor = conn.cursor()
-	#executes query
 	query = 'SELECT * FROM person WHERE username = %s and password = %s'
 	cursor.execute(query, (username, hash_password.hexdigest()))
-	#stores the results in a variable
 	data = cursor.fetchone()
-	#use fetchall() if you are expecting more than 1 data row
 	cursor.close()
 	error = None
 	if(data):
-		#creates a session for the the user
-		#session is a built in
-		session['username'] = username
+		# valid login
+		session['username'] = data['username']
 		return redirect(url_for('home'))
 	else:
-		#returns an error message to the html page
+		# invalid login
 		error = 'Invalid username or password'
 		session['error'] = error
 		return redirect(url_for('login'))
-		#return render_template('login.html', error=error)
 
+# registration for account
 @app.route('/register')
 def register():
 	if 'error' in session:
@@ -72,36 +69,35 @@ def register():
 	else:
 		return render_template('register.html', error=error)
 
+# check if registration information is allowed
 @app.route('/registerAuth', methods=['GET', 'POST'])
 def registerAuth():
-	#grabs information from the forms
 	username = request.form['username']
 	password = request.form['password']
 	first_name = request.form['first_name']
 	last_name = request.form['last_name']
 	hash_password = hashlib.sha1(password)
 
-	#cursor used to send queries
+	# query for people with same username
 	cursor = conn.cursor()
-	#executes query
 	query = 'SELECT * FROM person WHERE username = %s'
 	cursor.execute(query, (username))
-	#stores the results in a variable
 	data = cursor.fetchone()
-	#use fetchall() if you are expecting more than 1 data row
 	error = None
 	if(data):
-		#If the previous query returns data, then user exists
+		# invalid username
 		error = "Username already exists"
 		session['error'] = error
 		return redirect(url_for('register'))
 	else:
+		# valid username, account created
 		ins = 'INSERT INTO person VALUES(%s, %s, %s, %s)'
 		cursor.execute(ins, (username, hash_password.hexdigest(), first_name, last_name))
 		conn.commit()
 		cursor.close()
 		return redirect(url_for('welcome'))
 
+# home page after logging in
 @app.route('/home')
 def home():
 	username = session['username']
@@ -109,22 +105,17 @@ def home():
 	session['error'] = None
 	cursor = conn.cursor();
 
-	#post column gets cut off for long text
-	#query = 'SELECT * FROM Content NATURAL LEFT JOIN Share WHERE username = %s ORDER BY timest DESC'
-#SELECT * 
-#FROM content LEFT JOIN share ON content.id = share.id
-#WHERE content.username = 'qwerty' OR 
-#(share.username, share.group_name) IN (SELECT member.username_creator, member.group_name
-#FROM member RIGHT JOIN share on (member.group_name = share.group_name AND member.username_creator = share.username)
-#WHERE member.username = 'qwerty')
+	# query for information on current user
 	query = 'SELECT * FROM person WHERE username = %s'
 	cursor.execute(query, username)
 	info = cursor.fetchall()
 
-	query = 'SELECT * FROM Content LEFT JOIN Share ON content.id = share.id WHERE content.username = %s OR (share.username, share.group_name) IN (SELECT member.username_creator, member.group_name FROM member RIGHT JOIN share on (member.group_name = share.group_name AND member.username_creator = share.username) WHERE member.username = %s) ORDER BY timest DESC'
-	cursor.execute(query, (username, username))
+	# query for content relevant to current user (posts in group and personal public posts)
+	query = 'SELECT * FROM Content LEFT JOIN Share ON content.id = share.id WHERE content.username = %s OR (share.username, share.group_name) IN (SELECT member.username_creator, member.group_name FROM member RIGHT JOIN share on (member.group_name = share.group_name AND member.username_creator = share.username) WHERE member.username = %s or member.username_creator = %s) ORDER BY timest DESC'
+	cursor.execute(query, (username, username, username))
 	data = cursor.fetchall()
 
+	# query for friend groups the current user owns
 	query = 'SELECT group_name FROM FriendGroup WHERE username = %s'
 	cursor.execute(query, username)
 	data2 = cursor.fetchall()
@@ -135,46 +126,11 @@ def home():
 		temp.append(item.values())
 	for i in range(len(temp)):
 		group_list.append(temp[i][0])
-		#print group_list[i]
 
-	'''
-	temp[:] = []
-	query = 'SELECT group_name FROM Member WHERE username = %s'
-	cursor.execute(query, username)
-	data3 = cursor.fetchall()
-	print data3
-	member_list = []
-
-	query = 'SELECT username_creator FROM Member WHERE username = %s'
-	cursor.execute(query, username)
-	data4 = cursor.fetchall()
-	print data4
-	creator_list = []
-
-	for item in data3:
-		temp.append(item.values())
-	for i in range(len(temp)):
-		member_list.append(temp[i][0])
-		print member_list[i]
-
-	temp[:] = []
-
-	for item in data4:
-		temp.append(item.values())
-	for i in range(len(temp)):
-		creator_list.append(temp[i][0])
-
-	for i in range(len(creator_list)):
-		member_list[i] = member_list[i] + ' @' + creator_list[i]
-
-	for i in range(len(member_list)):
-		group_list.append(member_list[i])
-	'''
-
+	# query for friend groups the current user is a member of
 	query = 'SELECT group_name, username_creator FROM Member WHERE username = %s AND username_creator != %s'
 	cursor.execute(query, (username, username))
 	data3 = cursor.fetchall()
-	print data3
 
 	tmp2 = []
 	creator_list = []
@@ -192,19 +148,20 @@ def home():
 	for i in range(len(member_list)):
 		group_list.append(member_list[i])		
 
-	print info
 	cursor.close()
 	if error == None:
 		return render_template('home.html', info=info, posts=data, group_list=group_list)
 	else:
 		return render_template('home.html', info=info, posts=data, error=error, group_list=group_list)
 
+# log out 
 @app.route('/logout')
 def logout():
 	session.pop('username')
 	session.pop('error')
 	return redirect('/')
 
+# posting attempt
 @app.route('/post', methods=['GET','POST'])
 def post():
 	item = request.form['blog']
@@ -214,7 +171,7 @@ def post():
 	timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 	cursor = conn.cursor()
 
-	
+	# public or private post
 	if visibility == "True":
 		visibility = True
 	else:
@@ -226,7 +183,9 @@ def post():
 		temp = []
 		group_list = []
 
+	# private post
 	if not visibility:
+		# get official group name
 		try:
 			group = request.form['group']
 		except:
@@ -237,28 +196,16 @@ def post():
 			creator = group[pos+1:]
 			group = group[0:pos-1]
 
-		#for item in data:
-		#	temp.append(item.values())
-		#for i in range(len(temp)):
-		#	group_list.append(temp[i][0])
-		#	print group_list[i]
-
-	#false -> private, has a friendgroup associated with it
-	#true -> public to all friends
-
-	#print group
-	#print creator
+	# query to insert content item
 	ins = 'INSERT INTO Content (username, timest, file_path, content_name, public) VALUES (%s, %s, %s, %s, %s)'
 	cursor.execute(ins, (username, timestamp, path, item, visibility))
 	conn.commit();
 
+	# query to insert information about content information shared with group
 	if not visibility:
 		query = 'SELECT id FROM Content WHERE timest = %s AND username = %s'
 		cursor.execute(query, (timestamp, username))
 		content_ID = cursor.fetchall()
-		print timestamp
-		print username
-		print content_ID[0].get('id')
 		ins = 'INSERT INTO Share VALUES (%s, %s, %s)'
 		if creator == '':
 			cursor.execute(ins, (content_ID[0].get('id'), group, username))
@@ -266,13 +213,15 @@ def post():
 			cursor.execute(ins, (content_ID[0].get('id'), group, creator))
 		conn.commit()
 
-	#selects any content that the user has posted, obviously needs changing
 	query = 'SELECT content_name FROM Content WHERE username = %s'
 	cursor.execute(query, (username))
 	data = cursor.fetchall()
 	cursor.close()
 	return redirect(url_for('home'))
 
+# query to look at user's information
+# information includes number of friends,
+# number of friend groups, % of public posts and more
 @app.route('/user/userid=<user>', methods=['GET', 'POST'])
 def view_user(user):
 	cursor = conn.cursor()
@@ -280,7 +229,6 @@ def view_user(user):
 	cursor.execute(query, (user))
 	countp = cursor.fetchall()
 	nump = countp[0]['num_posts']
-	print nump
 
 	query = 'SELECT min(timest) AS first_post FROM Content WHERE username = %s'
 	cursor.execute(query, (user))
@@ -298,7 +246,6 @@ def view_user(user):
 	cursor.execute(query, (user))
 	countpriv = cursor.fetchall()
 	num_pub = countpriv[0]['num_pub']
-	print num_pub
 	try:
 		percent = (((float)(num_pub))/(nump))*100
 	except:
@@ -314,8 +261,13 @@ def view_user(user):
 	public_post = cursor.fetchall()
 
 	cursor.close()
-	return render_template('user.html', user=user, countp=countp, f_post=f_post, l_post=l_post, countg=countg, percent=percent, num_friends=num_friends, public=public_post)
 
+	if user == session['username']:
+		return render_template('user.html', user=user, countp=countp, f_post=f_post, l_post=l_post, countg=countg, percent=percent, num_friends=num_friends, public=public_post)
+	else:
+		return render_template('user.html', user=user, countp=countp, f_post=f_post, l_post=l_post, countg=countg, percent=percent, num_friends=num_friends, public=public_post, other=True)
+
+# view content item
 @app.route('/post/content_id=<id>', methods=['GET', 'POST'])
 def view_post(id):
 	session['id'] = id
@@ -324,17 +276,27 @@ def view_post(id):
 	session['error'] = None
 
 	cursor = conn.cursor()
-	query = 'SELECT * FROM Content LEFT JOIN Share ON content.id = share.id WHERE content.id = %s'#NATURAL LEFT JOIN Share WHERE username = %s AND id = %s ORDER BY timest DESC'
+	query = 'SELECT * FROM Content LEFT JOIN Share ON content.id = share.id WHERE content.id = %s'
 	cursor.execute(query, id)
 	data = cursor.fetchall()
-	#print data[0]['public']
+	print data[0]['Share.username']
+	print session['username']
 	cursor.close()
+
+	# check if content item can be viewed by current user (post is part of friend group user is in or public)
+	if data[0]['public'] == False and data[0]['Share.username'] != username:
+		cursor = conn.cursor()
+		query = 'SELECT * FROM member WHERE username = %s and username_creator = %s and group_name = %s'
+		cursor.execute(query, (username, data[0]['Share.username'], data[0]['group_name']))
+		check = cursor.fetchall()
+		print check
+		if not check:
+			return redirect(url_for('home'))
 
 	cursor = conn.cursor()
 	query = 'SELECT * FROM Tag JOIN Person ON username_taggee = person.username WHERE id = %s AND status = %s'
 	cursor.execute(query, (id, True))
 	tag = cursor.fetchall()
-	print tag
 	cursor.close()
 
 	cursor = conn.cursor()
@@ -351,6 +313,7 @@ def view_post(id):
 	else:
 		return render_template('comments.html', people=tag, post=data, comments=data2, person=data3, error=error)
 
+# add comment to post
 @app.route('/comment', methods=['GET', 'POST'])
 def comment():
 	id = session['id']
@@ -364,6 +327,7 @@ def comment():
 	cursor.close()
 	return redirect(url_for('view_post', id=id))
 
+# tag person by username
 @app.route('/tag', methods=['GET', 'POST'])
 def tagging():
 	id = session['id']
@@ -378,18 +342,28 @@ def tagging():
 	content = cursor.fetchall()
 
 	if content[0]['public'] == 0:
-		query = 'SELECT group_name FROM share WHERE id = %s'
+		query = 'SELECT group_name, username FROM share WHERE id = %s'
 		cursor.execute(query, id)
-		data = cursor.fetchall()
+		data_g = cursor.fetchall()
 
-		query = 'SELECT username FROM member WHERE group_name = %s'
-		cursor.execute(query, data[0]['group_name'])
+		query = 'SELECT username FROM member WHERE group_name = %s and username_creator = %s'
+		cursor.execute(query, (data_g[0]['group_name'], data_g[0]['username']))
 		data = cursor.fetchall()
+		print data
 
 		member_list = []
 		for i in range(len(data)):
 			member_list.append(data[i]['username'])
 
+		#query = 'SELECT username FROM friendgroup WHERE group_name = %s'
+		#cursor.execute(query, data_g[0]['group_name'])
+		#data = cursor.fetchall()
+		#print data
+
+		#if data:
+		member_list.append(data_g[0]['username'])
+
+		# check if person is part of friend group if the post is private
 		if tagged not in member_list:
 			session['error'] = tagged + " is not part of this friend group."
 			return redirect(url_for('view_post', id=id))
@@ -398,6 +372,7 @@ def tagging():
 	cursor.execute(query, (id, tagged))
 	check = cursor.fetchall()
 
+	# check if person is tagged yet
 	if check:
 		if check[0]['status'] == True:
 			session['error'] = tagged + " is already tagged."
@@ -406,6 +381,7 @@ def tagging():
 			cursor.close()
 			return redirect(url_for('view_post', id=id))
 
+	# self tagging
 	if tagger == tagged:
 		status = True
 
@@ -417,6 +393,8 @@ def tagging():
 
 	return redirect(url_for('view_post', id=id))
 
+# log for all tags
+# see current or pending tags and allows pending tags to be accepted or denied
 @app.route('/tag-log', methods=['GET', 'POST'])
 def tag_log():
 	username = session['username']
@@ -434,6 +412,7 @@ def tag_log():
 
 	return render_template('tag-log.html', tagging=data, approved=data2)
 
+# accept or deny tag chosen in tag log
 @app.route('/edit_tag', methods=['GET', 'POST'])
 def edit_tag():
 	try:
@@ -446,7 +425,6 @@ def edit_tag():
 
 
 	if choice == 'Accept':
-		print choice
 		add = True
 	if choice == 'Deny':
 		add = False
@@ -464,22 +442,28 @@ def edit_tag():
 
 	return redirect(url_for('tag_log'))
 
-
+# view information about current friend groups and options on own friend groups
 @app.route('/friendgroup')
 def friendgroups():
 	username = session['username']
 	cursor = conn.cursor()
-	query = 'SELECT group_name, username_creator FROM member WHERE username = %s'
-	cursor.execute(query, username)
+	query = 'SELECT DISTINCT group_name, username_creator FROM member WHERE username = %s or username_creator=%s'
+	cursor.execute(query, (username, username))
 	data = cursor.fetchall()
 
-	query = 'SELECT * FROM member'
+	query = 'SELECT * FROM member JOIN person on member.username = person.username'
 	cursor.execute(query)
 	data2 = cursor.fetchall()
+
+	query = 'SELECT * FROM friendgroup JOIN person on friendgroup.username = person.username'
+	cursor.execute(query)
+	owner = cursor.fetchall()
+
 	cursor.close()
 
-	return render_template('friendgroup.html', group_list=data, member_list=data2)
+	return render_template('friendgroup.html', group_list=data, member_list=data2, owner=owner)
 
+# page to add a person to a friend group you own
 @app.route('/add_to_fg', methods=['GET', 'POST'])
 def add_to_fg():
 	username = session['username']
@@ -508,7 +492,6 @@ def add_to_fg():
 		temp.append(item.values())
 	for i in range(len(temp)):
 		friend_list.append(temp[i][1] + ' ' + temp[i][2] + ' (' + temp[i][0] + ')')
-		print friend_list[i]
 	temp[:] = []
 	for item in data2:
 		temp.append(item.values())
@@ -524,7 +507,7 @@ def add_to_fg():
 	else:
 		return render_template('edit_fg.html', friend_list=friend_list, group_list=group_list, error=error, success=success)
 
-
+# add a person to a friend group that exists and that you own
 @app.route('/insert_fg', methods=['GET', 'POST'])
 def insert_fg():
 	username = session['username']
@@ -562,7 +545,6 @@ def insert_fg():
 		temp.append(item.values())
 	for i in range(len(temp)):
 		friend_list.append(temp[i][0])
-		print friend_list[i]
 	temp[:] = []
 	for item in data2:
 		temp.append(item.values())
@@ -579,7 +561,6 @@ def insert_fg():
 		session['error'] = err
 		cursor.close()
 		return redirect(url_for('add_to_fg'))
-		#return render_template('edit_fg.html', friend_list=total_fl, group_list=group_list, error=err)
 
 	ins = 'INSERT INTO Member (username, group_name, username_creator) VALUES (%s,%s,%s)'
 	cursor.execute(ins, (friend, group, username))
@@ -590,8 +571,8 @@ def insert_fg():
 	session['success'] = success
 
 	return redirect(url_for('add_to_fg'))
-	#return render_template('edit_fg.html', friend_list=total_fl, group_list=group_list, success=success)
 
+# page to create a friend group that you will own
 @app.route('/create_fg', methods=['GET', 'POST'])
 def create_fg():
 	username = session['username']
@@ -613,39 +594,30 @@ def create_fg():
 		temp.append(item.values())
 	for i in range(len(temp)):
 		username_list.append(temp[i][0])
-		#print username_list[i]
 	for i in range(len(temp)):
 		first_name_list.append(temp[i][1])
-		#print first_name_list[i]
 	for i in range(len(temp)):
 		last_name_list.append(temp[i][2])
-		#print last_name_list
 
 	for i in range(len(temp)):
 		friend_list.append(first_name_list[i] + ' ' + last_name_list[i] + ' (' + username_list[i] + ')')
-		#print friend_list[i]
 
 	if error == None:
 		return render_template('create_fg.html', friend_list=friend_list)
 	else:
 		return render_template('create_fg.html', friend_list=friend_list, error=error)
 
+# create the actual friend group
 @app.route('/new_fg', methods=['GET', 'POST'])
 def new_fg():
 	username = session['username']
 	group = request.form['newgroup']
 	friend_1 = request.form['friend1']
-	#print friend_1
-	#friend_2 = request.form['friend2']
-	#print friend_2
 	description = request.form['description']
 	cursor = conn.cursor()
 
 	index = friend_1.rfind('(')
 	friend_1_username = friend_1[index+1:-1]
-
-	#index = friend_2.rfind('(')
-	#friend_2_username = friend_2[index+1:-1]
 
 	temp = []
 	group_list = []
@@ -663,26 +635,17 @@ def new_fg():
 		temp.append(item.values())
 	for i in range(len(temp)):
 		group_list.append(temp[i][0])
-		#print group_list[i]
 	temp[:] = []
 	for item in data2:
 		temp.append(item.values())
 	for i in range(len(temp)):
 		friend_list.append(temp[i][0])
-		#print friend_list[i]
 
 	if group in group_list:
 		err = 'This FriendGroup already exists.'
 		session['error'] = err
 		cursor.close()
 		return redirect(url_for('create_fg'))
-		#return render_template('create_fg.html', friend_list=friend_list, error=err)
-	#if friend_1 == friend_2:
-	#	err = 'Duplicate friends selected'
-	#	session['error'] = err
-	#	cursor.close()
-	#	return redirect(url_for('create_fg'))
-		#return render_template('create_fg.html', friend_list=friend_list, error=err)
 
 	ins = 'INSERT INTO FriendGroup (group_name, username, description) VALUES (%s,%s,%s)'
 	cursor.execute(ins, (group, username, description))
@@ -690,14 +653,12 @@ def new_fg():
 	ins = 'INSERT INTO Member (username, group_name, username_creator) VALUES (%s,%s,%s)'
 	cursor.execute(ins, (friend_1_username, group, username))
 	conn.commit()
-	#cursor.execute(ins, (friend_2_username, group, username))
-	#conn.commit()
-	cursor.execute(ins, (username, group, username))
 	#cursor.execute(ins, (username, group, username))
 	conn.commit()
 	cursor.close()
 	return redirect(url_for('home'))
 
+# page to remove a friend from a friend group you own
 @app.route('/remove_friend')
 def remove_friend():
 	username = session['username']
@@ -725,7 +686,6 @@ def remove_friend():
 		temp.append(item.values())
 	for i in range(len(temp)):
 		friend_list.append(temp[i][1] + ' ' + temp[i][2] + ' (' + temp[i][0] + ')')
-		#print friend_list[i]
 
 	cursor = conn.cursor()
 	query = 'SELECT group_name FROM FriendGroup WHERE username = %s'
@@ -738,7 +698,6 @@ def remove_friend():
 		temp.append(item.values())
 	for i in range(len(temp)):
 		group_list.append(temp[i][0])
-		print group_list[i]
 
 	cursor.close()
 
@@ -751,7 +710,7 @@ def remove_friend():
 	else:
 		return render_template('remove_friend.html', group_list=group_list, friend_list=friend_list, error=error, success=success)
 
-
+# remove the chosen person from a friend group
 @app.route('/remove', methods=['GET', 'POST'])
 def remove():
 	username = session['username']
@@ -788,7 +747,6 @@ def remove():
 		temp.append(item.values())
 	for i in range(len(temp)):
 		friend_list.append(temp[i][0])
-		print friend_list[i]
 	temp[:] = []
 	for item in data2:
 		temp.append(item.values())
@@ -805,16 +763,14 @@ def remove():
 		session['error'] = err
 		cursor.close()
 		return redirect(url_for('remove_friend'))
-		#return render_template('remove_friend.html', group_list=group_list, friend_list=total_fl, error=err)
-	if len(friend_list) == 2:
+	if len(friend_list) == 1:
 		err = group + " only has two members! Can't remove."
 		session['error'] = err
 		cursor.close()
 		return redirect(url_for('remove_friend'))
-		#return render_template('remove_friend.html', group_list=group_list, friend_list=total_fl, error=err)
 
-	rm = 'DELETE FROM Member WHERE username = %s'
-	cursor.execute(rm, (friend))
+	rm = 'DELETE FROM Member WHERE username = %s and friendgroup = %s'
+	cursor.execute(rm, (friend, group))
 	conn.commit()
 	cursor.close()
 
@@ -822,8 +778,8 @@ def remove():
 	session['success'] = success
 
 	return redirect(url_for('remove_friend'))
-	#return render_template('remove_friend.html', group_list=group_list, friend_list=total_fl, success=success)
 
+# view profile information that can be changed (password and first/last name)
 @app.route('/edit_profile', methods=['GET','POST'])
 def edit_profile():
 	error = session['error']
@@ -840,6 +796,7 @@ def edit_profile():
 	else:
 		return render_template('edit-profile.html', name=info, error=error)
 
+# set first and last name to new entry
 @app.route('/change_name', methods=['GET', 'POST'])
 def change_name():
 	first_name = request.form['first_name']
@@ -853,6 +810,7 @@ def change_name():
 
 	return redirect(url_for('edit_profile'))
 
+# set password to something else
 @app.route('/change_pass', methods=['GET', 'POST'])
 def change_pass():
 	old_pass = request.form['old']
@@ -879,6 +837,7 @@ def change_pass():
 
 	return redirect(url_for('edit_profile'))
 
+# view list of users, allows to view profiles/get correct usernames for tagging or friending
 @app.route('/user', methods=['GET', 'POST'])
 def user_list():
 	cursor = conn.cursor()
@@ -888,8 +847,7 @@ def user_list():
 	cursor.close()
 	return render_template('user_list.html', user_list=data)
 
-
-app.secret_key = 'some key that you will never guess'
+app.secret_key = 'some super secret key'
 #Run the app on localhost port 5000
 #debug = True -> you don't have to restart flask
 #for changes to go through, TURN OFF FOR PRODUCTION

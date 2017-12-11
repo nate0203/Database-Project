@@ -699,10 +699,16 @@ def new_fg():
 @app.route('/remove_friend')
 def remove_friend():
 	username = session['username']
-	success = session['success']
-	session['success'] = None
-	error = session['error']
-	session['error'] = None
+	try:
+		success = session['success']
+		session['success'] = None
+	except:
+		success = None
+	try:
+		error = session['error']
+		session['error'] = None
+	except:
+		error = None
 
 	cursor = conn.cursor();
 	query = 'SELECT first_name, last_name, username FROM Person WHERE username!=%s'

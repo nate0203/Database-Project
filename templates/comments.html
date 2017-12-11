@@ -89,7 +89,7 @@
 		<h3>Users Tagged: </h3>
 		<p word-break:normal>
 			{% for line in people %}
-				<a href="{{url_for('view_user', user=line.username_taggee)}}">{{line.username_taggee}}</a>&nbsp;&nbsp;||&nbsp;&nbsp;
+				<a href="{{url_for('view_user', user=line.username_taggee)}}">{{line.first_name}} {{line.last_name}}</a>&nbsp;&nbsp;||&nbsp;&nbsp;
 			{% endfor %}
 		</p>
 

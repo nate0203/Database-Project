@@ -208,22 +208,13 @@ def logout():
 @app.route('/post', methods=['GET','POST'])
 def post():
 	item = request.form['blog']
-	try:
-		group = request.form['group']
-	except:
-		return redirect(url_for('home'))
 	visibility = request.form['visibility']
 	username = session['username']
 	path = request.form['file']
 	timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 	cursor = conn.cursor()
 
-	creator = ''
-	pos = group.rfind('@')
-	if pos != -1:
-		creator = group[pos+1:]
-		group = group[0:pos-1]
-
+	
 	if visibility == "True":
 		visibility = True
 	else:
@@ -235,6 +226,17 @@ def post():
 		temp = []
 		group_list = []
 
+	if not visibility:
+		try:
+			group = request.form['group']
+		except:
+			return redirect(url_for('home'))
+		creator = ''
+		pos = group.rfind('@')
+		if pos != -1:
+			creator = group[pos+1:]
+			group = group[0:pos-1]
+
 		#for item in data:
 		#	temp.append(item.values())
 		#for i in range(len(temp)):
@@ -244,8 +246,8 @@ def post():
 	#false -> private, has a friendgroup associated with it
 	#true -> public to all friends
 
-	print group
-	print creator
+	#print group
+	#print creator
 	ins = 'INSERT INTO Content (username, timest, file_path, content_name, public) VALUES (%s, %s, %s, %s, %s)'
 	cursor.execute(ins, (username, timestamp, path, item, visibility))
 	conn.commit();
@@ -329,7 +331,7 @@ def view_post(id):
 	cursor.close()
 
 	cursor = conn.cursor()
-	query = 'SELECT username_taggee FROM Tag WHERE id = %s AND status = %s'
+	query = 'SELECT * FROM Tag JOIN Person ON username_taggee = person.username WHERE id = %s AND status = %s'
 	cursor.execute(query, (id, True))
 	tag = cursor.fetchall()
 	print tag

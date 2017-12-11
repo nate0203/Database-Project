@@ -2,6 +2,12 @@
 <head>
 	<title>Register | PriCoSha</title>
 	<style>
+		h1 { 
+			font-size:700%;
+			text-align: center;
+			color: #04859D;
+			font-family: "Brush Script MT", cursive;
+		}
 		label,input { 
 			display:block; 
 		}
@@ -39,24 +45,50 @@
 		    font-size: 18px;
 		    margin-bottom: 10px;
 		}
+		p {
+			font-family: "Arial";
+			color: #4d94ff;
+			font-size: 200%;
+		}
+		input[type=text],[type=password] {
+			width: 30%;
+			padding: 8px 8px;
+			border: 1px solid black;
+   			border-radius: 2px;
+		}
 	</style>
 </head>
 <body>
 	<center>
 		<h1>PriCoSha</h1>
+		{% if error %}
+			<p class="error"><strong>Error:</strong> {{error}}</p>
+		{% endif %}
 		<form action="/registerAuth" method="POST">
-			<input type="text" name = "username" placeholder="username" required/> </br>
-			<input type="password" name = "password" placeholder="password" required/></br>
-			<input type="text" name = "first_name" placeholder="First Name" required/></br>
-			<input type="text" name = "last_name" placeholder="Last Name" required/></br> 
-			<input type="submit" value = Register />
-			{% if error %}
-				<p class="error"><strong>Error:</strong> {{error}}</p>
-			{% endif %}
+			<div id="Password">
+				<input type="text" name = "username" placeholder="Username"required/> </br>
+				<input type="password" name = "password" placeholder="Password" id="password" required/></br>
+				<input type="password" name="confirm" placeholder="Confirm Password" id="confirm_password" required><br>
+				<input type="text" name = "first_name" placeholder="First Name" required/></br>
+				<input type="text" name = "last_name" placeholder="Last Name" required/></br> 
+				<button type="submit" value = Register>Register</button>
+			</div>
 		</form>
-
-		<a href="/">Go back</a>
+		<a href="/"><button type="submit" value=Back>Back</button></a>
 	</center>
+
+	<script>
+		var password = document.getElementById("password"), confirm_password = document.getElementById("confirm_password");
+		function validatePassword(){
+			if(password.value != confirm_password.value) {
+				confirm_password.setCustomValidity("Passwords Do Not Match");
+			} else {
+				confirm_password.setCustomValidity('');
+				}
+		}
+		password.onchange = validatePassword;
+		confirm_password.onkeyup = validatePassword;
+		</script>
 </body>
 
 

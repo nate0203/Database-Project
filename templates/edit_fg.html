@@ -1,6 +1,8 @@
 <html>
 <head>
-	<title>Create FriendGroup | PriCoSha</title>
+	<title>Add Friend | PriCoSha</title>
+	<link href="//netdna.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.6.3/css/bootstrap-select.min.css" />
 	<style>
 		label,button { 
 			font-size: 200%;
@@ -17,25 +19,40 @@
 		    font-size: 18px;
 		    margin-bottom: 10px;
 		}
+		button:hover {
+		    background-color: red;
+		}
+		p {
+			font-family: "Arial";
+			color: #4d94ff;
+			font-size: 150%;
+			margin-bottom: 0;
+		}
+		h4 {
+			font-size: 120%;
+			font-weight: bold
+		}
 	</style>
 </head>
 <body>
 	<center>
 		<h2>Add a friend to a group!</h2>
 		<form action="/insert_fg" method="POST">
-			<h4>Select the FriendGroup</h4><br>
-			<select name="group">
-                        {% for item in group_list %}
-                        <option value="{{item}}" selected>{{item}}</option>
-                        {% endfor %}
-            </select> <br><br>
+			<h4>Select the FriendGroup</h4>
+			<div class="row-fluid">
+			<select name="group" class="selectpicker" data-live-search="true">
+                {% for item in group_list %}
+                	<option value="{{item}}" selected>{{item}}</option>
+                {% endfor %}
+            </select> </div><br>
 
 			<h4>Select a new friend</h4>
-			<select name="friend">
-                        {% for item in friend_list %}
-                        <option value="{{item}}" selected>{{item}}</option>
-                        {% endfor %}
-            </select><br><br>
+			<div class="row-fluid">
+			<select name="friend" class="selectpicker" data-live-search="true">
+                {% for item in friend_list %}
+                    <option value="{{item}}" selected>{{item}}</option>
+                {% endfor %}
+            </select></div><br>
 
             {% if error %}
 				<p class="error"><strong>Error:</strong> {{error}} </p>
@@ -44,8 +61,13 @@
 				<p class="success"><strong>Sucess:</strong> {{success}} </p>
 			{% endif %} <br><br>
 
-			<input type="submit" value = Submit>
+			<button type="submit">Submit</button>
+
+			<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  			<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+			<script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.6.3/js/bootstrap-select.min.js"></script>
 		</form>
-		<a href="/home">Go Home</a>
+		<a href="/friendgroup"><button>Back</button></a>  
+		<a href="/home"><button>Home</button></a>
 	</center>
 </body>

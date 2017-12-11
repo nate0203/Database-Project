@@ -30,12 +30,49 @@
 		    border: 1px solid #ccc;
 		    border-top: none;
 		}
+		form {
+			display: inline-block;
+		}
+		table, th, td{
+			border: 1px solid black;
+			vertical-align: center;
+			border-collapse: collapse;
+			text-align: center;
+		}
+		th,td {
+			padding-left: 15px;
+			padding-right: 15px;
+			padding-top: 5px;
+			padding-bottom: 5px;
+		}
+		th {
+			background-color: #e6e6e6;
+			font-size: 18px;
+		}
+		td { font-size: 16px; }
+		tr:hover {background-color: #d9d9d9;}
+		h1 { 
+			font-family: "Brush Script MT", cursive; 
+			color: #ff1a1a;
+			font-size: 50px;
+			padding: 0;
+			margin: 5;
+		}
+		a {
+			text-decoration: none;
+			color: black;
+		}
+		a:hover { 
+			text-decoration: underline; 
+			color: blue;
+		}
+		</style>
 	</style>
 </head>
 <body>
 	<form action="/create_fg" method="POST">
 		<div class="tab">
-		  <button class="tablinks" onclick="openTab(event, 'Create')">Create</button>
+		  <button class="tablinks">Create</button>
 		</div>
 		<div id="Create" class="tabcontent">
 				
@@ -44,7 +81,7 @@
 	
 	<form action="/add_to_fg" method="POST">
 		<div class="tab">
-	  	 <button class="tablinks" onclick="openTab(event, 'Add')">Add Friend</button>
+	  	 <button class="tablinks">Add Friend</button>
 		</div>
 		<div id="Add" class="tabcontent">
 
@@ -53,7 +90,7 @@
 
 	<form action="/remove_friend">
 		<div class="tab">
-	  	 <button class="tablinks" onclick="openTab(event, 'Home')">Remove Friend</button>
+	  	 <button class="tablinks">Remove Friend</button>
 		</div>
 		<div id="Home" class="tabcontent">
 
@@ -62,33 +99,33 @@
 
 	<form action="/home">
 		<div class="tab">
-	  	 <button class="tablinks" onclick="openTab(event, 'Home')">Home</button>
+	  	 <button class="tablinks">Home</button>
 		</div>
 		<div id="Home" class="tabcontent">
 
 		</div>
 	</form>
-
-	<script>
-		function openTab(evt, name) {
-		    var i, tabcontent, tablinks;
-		    tabcontent = document.getElementsByClassName("tabcontent");
-		    for (i = 0; i < tabcontent.length; i++) {
-		        tabcontent[i].style.display = "none";
-		    }
-		    tablinks = document.getElementsByClassName("tablinks");
-		    for (i = 0; i < tablinks.length; i++) {
-		        tablinks[i].className = tablinks[i].className.replace(" active", "");
-		    }
-		    document.getElementById(name).style.display = "block";
-		    evt.currentTarget.className += " active";
-		}
-	</script>
 	<center>
 		<h1>Friend Groups</h1>
-		{% for line in group_list %}
-			<p>{{line.group_name}}</p>
-		{% endfor %}
+		<table>
+			<th>Friend Groups</th>
+			<th>Owner</th>
+			<th>Members</th>
+
+			{% for line in group_list %}
+			<tr>
+				<td>{{line.group_name}}</td>
+				<td><a href="{{url_for('view_user', user=line.username_creator)}}">{{line.username_creator}}</a></td>
+				<td>
+					{% for member in member_list %}
+						{% if member.group_name == line.group_name %}
+							<a href="{{url_for('view_user', user=member.username)}}">{{member.username}}</a>  ||   
+						{% endif %}
+					{% endfor %}
+				</td>
+			</tr>
+			{% endfor %}
+		</table>
 	</center>
 </body>
 </html>

@@ -1,6 +1,8 @@
 <html>
 <head>
 	<title>Remove Friend | PriCoSha</title>
+	<link href="//netdna.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.6.3/css/bootstrap-select.min.css" />
 	<style>
 		label,button { 
 			font-size: 200%;
@@ -17,36 +19,54 @@
 		    font-size: 18px;
 		    margin-bottom: 10px;
 		}
+		button:hover {
+		    background-color: red;
+		}
+		p {
+			font-family: "Arial";
+			color: #4d94ff;
+			font-size: 150%;
+			margin-bottom: 0;
+		}
+		h4 {
+			font-size: 120%;
+		}
 	</style>
 </head>
 <body>
 	<center>
 		<h2>Remove a friend from a group!</h2>
 		<form action="/remove" method="POST">
-			<h4>Select the FriendGroup</h4><br>
-			<select name="group">
+			<h4>Select the FriendGroup</h4>
+			<div class="row-fluid">
+			<select name="group" class="selectpicker" data-live-search="true">
                         {% for item in group_list %}
                         <option value="{{item}}" selected>{{item}}</option>
                         {% endfor %}
-            </select> <br><br>
+            </select></div><br>
 
 			<h4>Remove a friend</h4>
-			<select name="friend">
+			<div class="row-fluid">
+			<select name="friend" class="selectpicker" data-live-search="true">
                         {% for item in friend_list %}
                         <option value="{{item}}" selected>{{item}}</option>
                         {% endfor %}
-            </select><br><br>
+            </select></div><br>
 
             {% if error %}
 				<p class="error"><strong>Error:</strong> {{error}} </p>
 			{% endif %}
 			{% if success %}
 				<p class="success"><strong>Sucess:</strong> {{success}} </p>
-			{% endif %} <br><br>
+			{% endif %}<br>
 
-			<input type="submit" value = Submit>
+			<button type="submit" value = Submit>Submit</button>
+			<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+			<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+			<script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.6.3/js/bootstrap-select.min.js"></script>
 		</form>
-		<a href="/home">Go Home</a>
+		<a href="/friendgroup"><button>Back</button></a>
+		<a href="/home"><button>Home</button></a>
 	</center>
 </body>
 </html>

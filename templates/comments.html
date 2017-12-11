@@ -1,6 +1,8 @@
 <html>
 <head>
 	<title>Comments for ID = {{post[0].id}} | PriCoSha</title>
+	<link href="//netdna.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.6.3/css/bootstrap-select.min.css" />
 	<style>
 		label,button { 
 			font-size: 200%;
@@ -15,19 +17,48 @@
 		    text-align: center;
 		    display: inline-block;
 		    font-size: 18px;
-		    margin-bottom: 10px;
 		}
+		table, th, td{
+			border: 1px solid black;
+			vertical-align: center;
+			border-collapse: collapse;
+		}
+		th,td {
+			padding-left: 15px;
+			padding-right: 15px;
+			padding-top: 5px;
+			padding-bottom: 5px;
+		}
+		th {
+			background-color: #00cc00;
+		}
+		tr:hover {background-color: #d9d9d9;}
+		div.direct a {
+		    background-color: #04859D;
+		    color: white;
+		    font-size: 18px;
+		    padding: 16px 32px;
+		    text-align: center;
+		    text-decoration: none;
+		    display: inline-block;
+		}
+		button:hover { background-color: red; }
+		a:hover { text-decoration: underline; }
+		input[type=text] {
+			width: 30%;
+			padding: 8px 8px;
+			border: 1px solid black;
+   			border-radius: 2px;
+		}
+		a {
+			text-decoration: none;
+		}
+		p { font-size: 16px; }
 	</style>
 </head>
 <body>
 	<center>
 		<h2>Post #{{post[0].id}}</h2>
-
-		<style type="text/css">
-			table, th, td{
-				border: 1px solid black;
-			}
-		</style>
 
 		<table>
 			<th>ID</th>
@@ -46,29 +77,37 @@
 				{% if line.file_path is not none %}
 					<td><center><img src={{line.file_path}} height="250"></center></td>
 				{% endif %}
-				{% if line.group_name is not none %}
-					<td><center>{{line.group_name}}</center></td>
-				{% endif %}
+				<td>
+					{% if line.group_name is not none %}
+						<center>{{line.group_name}}</center>
+					{% endif %}
+				</td>
 			</tr>
 		{% endfor %}
 		</table>
 
-		<br>
+		<h3>Users Tagged: </h3>
+		<p word-break:normal>
+			{% for line in people %}
+				<a href="{{url_for('view_user', user=line.username_taggee)}}">{{line.username_taggee}}</a>&nbsp;&nbsp;||&nbsp;&nbsp;
+			{% endfor %}
+		</p>
+
 		<form action="/tag" method="POST">
 			Tag A Friend:
-			<select name="friend">
+			<div class="row-fluid">
+			<select name="friend" class="selectpicker" data-live-search="true">
 				{% for item in person %}
 					<option value={{item.username}} selected>{{item.username}}</option>
 				{% endfor %}
-			</select>
-			<input type="submit" value="Tag">
+			</select></div><br>
+			<button type="submit" value="Tag">Tag</button>
 		</form>
 		{% if error %}
-			<strong>Error: </strong>{{error}}
+			<p style="font-family: 'Arial'; margin-bottom: 0;"><strong>Error: </strong>{{error}}</p>
 		{% endif %}
 
-		<br>
-		<br>
+		<hr style="border-top: 1px solid black">
 
 		<table>
 			<th>Username</th>
@@ -86,11 +125,13 @@
 		<br>
 		<form action="/comment" method="POST">
 			<input type="text" name = "Comment" placeholder="Post a comment!" style="text-align: center" required/><br><br>
-			<input type="submit" value=Submit>
+			<button type="submit" value=Submit>Submit</button>
 		</form>
-		<br>
-		<a href="/home">Go Home</a>
+		<div class="direct"><a href="/home">Home</a></div>
 
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+		<script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.6.3/js/bootstrap-select.min.js"></script>
 	</center>
 </body>
 </html>

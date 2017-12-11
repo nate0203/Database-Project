@@ -1,9 +1,48 @@
 <html>
 <head>
 	<title>Tags | PriCoSha</title>
+	<link href="//netdna.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.6.3/css/bootstrap-select.min.css" />
 	<style>
-		th, td {
+		table, th, td{
+			border: 1px solid black;
+			vertical-align: center;
+			border-collapse: collapse;
+		}
+		th,td {
+			padding-left: 15px;
 			padding-right: 15px;
+			padding-top: 5px;
+			padding-bottom: 5px;
+		}
+		th {
+			background-color: #00cc00;
+			font-size: 20px;
+		}
+		tr:hover {background-color: #d9d9d9;}
+		div.direct a {
+		    background-color: #04859D;
+		    color: white;
+		    font-size: 18px;
+		    padding: 16px 32px;
+		    text-align: center;
+		    text-decoration: none;
+		    display: inline-block;
+		}
+		a { 
+			text-decoration: none;
+			color: black;
+		}
+		a:hover { 
+			text-decoration: underline;
+			color: blue; 
+		}
+		input[type=submit]{
+			padding: 8px 25px;
+		}
+		p {
+			font-size: 20px;
+			padding: 0
 		}
 	</style>
 </head>
@@ -12,29 +51,31 @@
 		<h1>Pending Tags</h1>
 		<table>
 			<th>ID</th>
-			<th>Poster</th>
+			<th>Original Poster</th>
 			<th>Tagger</th>
 
 			{% for line in tagging %}
 				<tr>
-					<td><center>{{line.id}}</center></td>
-					<td><center>{{line.username}}</center></td>
-					<td><center>{{line.username_tagger}}</center></td>
+					<td><center><a href="{{url_for('view_post', id=line.id)}}">{{line.id}}</a></center></td>
+					<td><center><a href="{{url_for('view_user', user=line.username)}}">{{line.username}}</center></td>
+					<td><center><a href="{{url_for('view_user', user=line.username)}}">{{line.username_tagger}}</a></center></td>
 				</tr>
 			{% endfor %}
-		</table>
+		</table><br>
 
 		<form action = "/edit_tag" method = "POST">
-			ID:
-			<select name="post_id">
+			<div class="row-fluid">
+			<p>ID:
+			<select name="post_id" class="selectpicker" data-live-search="true">
 				{% for line in tagging %}
 					<option value="{{line.id}}" selected>{{line.id}}</option>
 				{% endfor %}
-			</select>
+			</select></p></div>
 			<input align="left" type="submit" name="action" value="Accept">
 			<input align="right" type="submit" name="action" value="Deny">
 		</form>
 
+		<hr style="border: 1px solid red">
 		<h1>Approved Tags</h1>
 		<table>
 			<th>ID</th>
@@ -42,13 +83,15 @@
 
 			{% for line in approved %}
 				<tr>
-					<td><center>{{line.id}}</center></td>
-					<td><center>{{line.username}}</center></td>
+					<td><center><a href="{{url_for('view_post', id=line.id)}}">{{line.id}}</a></center></td>
+					<td><center><a href="{{url_for('view_user', user=line.username)}}">{{line.username}}</a></center></td>
 				</tr>
 			{% endfor %}			
-		</table>
-
-		<a href="/home">Home</a>
+		</table><br>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+		<script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.6.3/js/bootstrap-select.min.js"></script>
+		<div class="direct"><a href="/home">Home</a></div>
 	</center>
 </body>
 </html>

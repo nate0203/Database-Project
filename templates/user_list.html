@@ -1,0 +1,83 @@
+<html>
+<head>
+	<title>Users | PriCoSha </title>
+	<style>
+	* {
+	  box-sizing: border-box;
+	}
+	#myInput {
+	  background-position: 10px 12px;
+	  background-repeat: no-repeat;
+	  width: 100%;
+	  font-size: 16px;
+	  padding: 12px 20px 12px 40px;
+	  border: 1px solid #ddd;
+	  margin-bottom: 12px;
+	}
+	#UL {
+	  list-style-type: none;
+	  padding: 0;
+	  margin: 0;
+	}
+
+	#UL li a {
+	  border: 1px solid #ddd;
+	  background-color: #f6f6f6;
+	  padding: 12px;
+	  text-decoration: none;
+	  font-size: 18px;
+	  color: black;
+	  display: block
+	}
+	a:hover {
+		background-color: #eee;
+	}
+	button {
+		background-color: #04859D;
+	    border: none;
+	    color: white;
+	    padding: 10px 20px;
+	    text-align: center;
+	    display: inline-block;
+	    font-size: 16px;
+	    float: left;
+	}
+	button:hover {
+		cursor: pointer;
+	}
+	h2 { text-align: center }
+	</style>
+</head>
+<body>
+
+	<h2>User Lists<a href="/home"><button>Home</button></a></h2>
+
+	<input type="text" id="myInput" onkeyup="myFunction()" placeholder="Search for names.." title="Type in a name">
+
+	<ul id="UL">
+		{% for line in user_list %}
+			<li><a href="{{url_for('view_user', user=line.username)}}">{{line.first_name}} {{line.last_name}} ({{line.username}})</a></li>
+		{% endfor %}
+	</ul>
+
+	<script>
+	function myFunction() {
+	    var input, filter, ul, li, a, i;
+	    input = document.getElementById("myInput");
+	    filter = input.value.toUpperCase();
+	    ul = document.getElementById("UL");
+	    li = ul.getElementsByTagName("li");
+	    for (i = 0; i < li.length; i++) {
+	        a = li[i].getElementsByTagName("a")[0];
+	        if (a.innerHTML.toUpperCase().indexOf(filter) > -1) {
+	            li[i].style.display = "";
+	        } else {
+	            li[i].style.display = "none";
+
+	        }
+	    }
+	}
+	</script>
+
+</body>
+</html>

@@ -1,6 +1,8 @@
 <html>
 <head>
 	<title>Home | PriCoSha</title>
+	<link href="//netdna.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.6.3/css/bootstrap-select.min.css" />
 	<style>
 		label,button { 
 			font-size: 200%;
@@ -17,14 +19,41 @@
 		    font-size: 18px;
 		    margin-bottom: 10px;
 		}
+		input[type=text], input[type=url] {
+			width: 30%;
+			padding: 8px 8px;
+			border: 1px solid black;
+   			border-radius: 2px;
+		}
+		input[type=text]:focus, input[type=url]:focus {
+			border: 2px solid black;
+		}
+		input[type=radio]{
+			margin-left: 30px;
+			margin-right: 30px;
+		}
+		input[type=submit]{
+			padding: 8px 25px;
+		}
+		a {
+			text-decoration: none;
+		}
+		a:hover { text-decoration: underline; }
+		p {
+			font-size: 16px;
+		}
+		pre {
+			font-size: 16px;
+		}
 	</style>
 </head>
 <body>
 	<center>
-		<h1>Welcome {{username}}</h1> 
+		<h1>Welcome {{info[0].first_name}} {{info[0].last_name}}</h1> 
 		<a href="/logout"><button type="submit">Logout</button></a>
 		<a href="/friendgroup"><button type="submit">Groups</button></a>
 		<a href="/tag-log"><button type="submit">Tags</button></a>
+		<a href="/user"><button type="submit">Users</button></a>
 		<a href="/edit_profile"><button type="submit">Settings</button></a>
 
 		<form action="/post" method="POST">
@@ -32,31 +61,24 @@
 			<pre>  Public | Private <br></pre>
 
 			<input type="radio" name="visibility" id="True" value="True" required>
-			<input type="radio" name="visibility" id="False" value="False" onclick="document.getElementById('FG').focus()"><br><br>
+			<input type="radio" name="visibility" id="False" value="False"><br><br>
 
-			Friend Groups:
-			<select name="group">
+			<div class="row-fluid">
+			<p>Friend Groups:
+			<select name="group" class="selectpicker" data-live-search="true">
                 {% for item in group_list %}
                 <option value="{{item}}" selected>{{item}}</option>
                 {% endfor %}
-            </select> <br><br>
+            </select></p></div> <br>
 			
 			<input type="url" name="file" placeholder="Link" id="path" style="text-align: center"><br><br>
 			<input type="text" name = "blog" placeholder="Post" style="text-align: center" required/><br><br>
 
-			<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-			<script>
-				$('input[name="visibility"]').change(function () {
-					if($("#False").is(':checked')) {
-						$('#FG').attr('required', true);
-					} else {
-						$('#FG').removeAttr('required');
-					}
-				});
-			</script>
+			<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+			<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+			<script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.6.3/js/bootstrap-select.min.js"></script>
 
 			<input type="submit" value = Post>
-
 
 			{% if error %}
 				<p class="error"><strong>Error:</strong> {{error}} </p>
@@ -66,7 +88,19 @@
 		<style type="text/css">
 			table, th, td{
 				border: 1px solid black;
+				vertical-align: center;
+				border-collapse: collapse;
 			}
+			th,td {
+				padding-left: 15px;
+				padding-right: 15px;
+				padding-top: 5px;
+				padding-bottom: 5px;
+			}
+			th {
+				background-color: #80ffaa;
+			}
+			tr:hover {background-color: #d9d9d9;}
 		</style>
 
 		<table>
@@ -86,9 +120,11 @@
 				{% if line.file_path is not none %}
 					<td><center><img src={{line.file_path}} height="250"></center></td>
 				{% endif %}
+				<td>
 				{% if line.group_name is not none %}
-					<td><center>{{line.group_name}}</center></td>
+					<center>{{line.group_name}}</center>
 				{% endif %}
+				</td>
 			</tr>
 		{% endfor %}
 		</table>
@@ -96,6 +132,4 @@
 		</br>
 	</center>
 </body>
-
-
 </html>

@@ -17,22 +17,69 @@
 		    font-size: 18px;
 		    margin-bottom: 10px;
 		}
+		div.act a {
+		    background-color: #04859D;
+		    color: white;
+		    font-size: 16px;
+		    padding: 12px 32px;
+		    text-align: center;
+		    text-decoration: none;
+		    display: inline-block;
+		}
+		div.content a {
+			text-decoration: none;
+			color: black;
+		}
+		h5 {
+			font-size: 16px;
+			padding: 0
+		}
+		table, th, td{
+			border: 1px solid black;
+			vertical-align: center;
+			border-collapse: collapse;
+		}
+		th,td {
+			padding-left: 15px;
+			padding-right: 15px;
+			padding-top: 5px;
+			padding-bottom: 5px;
+		}
+		th {
+			background-color: #00cc00;
+			font-size: 18px;
+		}
+		tr:hover {background-color: #d9d9d9;}
 	</style>
 </head>
 <body>
 	<center>
-		<h2><u>User {{user}}'s profile</u></h2>
-		<h5>Number of posts: {{countp[0].num_posts}}</h5>
-		<h5>First post: {{f_post[0].first_post}}</h5>
-		<h5>Last post: {{l_post[0].last_post}}</h5>
-		<h5>Number of Friend Groups: {{countg[0].num_groups}}</h5>
-		<h5>Number of Friends: {{num_friends[0].num_f}}</h5>
-		<h5>Percentage of Posts Made Public: {{percent}}%</h5>
+		<h2><u>{{user}}'s profile</u></h2>
+		<h5>Number of posts:  {{countp[0].num_posts}}</h5>
+		<h5>First post:  {{f_post[0].first_post}}</h5>
+		<h5>Last post:  {{l_post[0].last_post}}</h5>
+		<h5>Number of Friend Groups:  {{countg[0].num_groups}}</h5>
+		<h5>Number of Friends:  {{num_friends[0].num_f}}</h5>
+		<h5>Percentage of Posts Made Public:  {{percent}}%</h5>
+		<div class="act"><a href="{{ url_for('add_to_fg') }}">Add {{user}} to a Friend Group!</a></div>
 		<br>
-		<a href="{{ url_for('add_to_fg') }}">Add {{user}} to a Friend Group!</a>
+		<br>
+		<div class="act"><a href="/home">Go Home</a></div>
 		<br>
 		<br>
-		<a href="/home">Go Home</a>
+		<table>
+			<th>ID</th>
+			<th>Time</th>
+			<th>Title</th>
+
+			{% for line in public %}
+				<tr>
+					<td><center><a class="content" href="{{url_for('view_post', id=line.id)}}">{{line.id}}</a></center></td>
+					<td><center>{{line.timest}}</center></td>
+					<td><center>{{line.content_name}}</center></td>
+				</tr>
+			{% endfor %}
+		</table>
 	</center>
 </body>
 </html>

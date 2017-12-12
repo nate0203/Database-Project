@@ -37,7 +37,7 @@ def loginAuth():
 	username = request.form['username']
 	password = request.form['password']
 	session['error'] = None
-	hash_password = hashlib.md5(password)
+	hash_password = hashlib.sha1(password)
 
 	# query for correct username and password
 	cursor = conn.cursor()
@@ -225,6 +225,15 @@ def post():
 @app.route('/user/userid=<user>', methods=['GET', 'POST'])
 def view_user(user):
 	cursor = conn.cursor()
+
+	query = 'SELECT * FROM person WHERE username = %s'
+	cursor.execute(query, user)
+	people = cursor.fetchall()
+
+	if not people:
+		cursor.close()
+		return redirect(url_for('home'))
+
 	query = 'SELECT count(*) AS num_posts FROM Content WHERE username = %s'
 	cursor.execute(query, (user))
 	countp = cursor.fetchall()
@@ -279,9 +288,10 @@ def view_post(id):
 	query = 'SELECT * FROM Content LEFT JOIN Share ON content.id = share.id WHERE content.id = %s'
 	cursor.execute(query, id)
 	data = cursor.fetchall()
-	print data[0]['Share.username']
-	print session['username']
 	cursor.close()
+
+	if not data:
+		return redirect(url_for('home'))
 
 	# check if content item can be viewed by current user (post is part of friend group user is in or public)
 	if data[0]['public'] == False and data[0]['Share.username'] != username:
@@ -289,7 +299,6 @@ def view_post(id):
 		query = 'SELECT * FROM member WHERE username = %s and username_creator = %s and group_name = %s'
 		cursor.execute(query, (username, data[0]['Share.username'], data[0]['group_name']))
 		check = cursor.fetchall()
-		print check
 		if not check:
 			return redirect(url_for('home'))
 
@@ -349,7 +358,6 @@ def tagging():
 		query = 'SELECT username FROM member WHERE group_name = %s and username_creator = %s'
 		cursor.execute(query, (data_g[0]['group_name'], data_g[0]['username']))
 		data = cursor.fetchall()
-		print data
 
 		member_list = []
 		for i in range(len(data)):
@@ -358,7 +366,6 @@ def tagging():
 		#query = 'SELECT username FROM friendgroup WHERE group_name = %s'
 		#cursor.execute(query, data_g[0]['group_name'])
 		#data = cursor.fetchall()
-		#print data
 
 		#if data:
 		member_list.append(data_g[0]['username'])
@@ -459,9 +466,12 @@ def friendgroups():
 	cursor.execute(query)
 	owner = cursor.fetchall()
 
+	query = 'SELECT * FROM friendgroup'
+	cursor.execute(query)
+	info = cursor.fetchall()
 	cursor.close()
 
-	return render_template('friendgroup.html', group_list=data, member_list=data2, owner=owner)
+	return render_template('friendgroup.html', info=info, group_list=data, member_list=data2, owner=owner)
 
 # page to add a person to a friend group you own
 @app.route('/add_to_fg', methods=['GET', 'POST'])
@@ -769,7 +779,7 @@ def remove():
 		cursor.close()
 		return redirect(url_for('remove_friend'))
 
-	rm = 'DELETE FROM Member WHERE username = %s and friendgroup = %s'
+	rm = 'DELETE FROM Member WHERE username = %s and group_name = %s'
 	cursor.execute(rm, (friend, group))
 	conn.commit()
 	cursor.close()

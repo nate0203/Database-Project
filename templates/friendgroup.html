@@ -111,6 +111,7 @@
 			<th>Friend Groups</th>
 			<th>Owner</th>
 			<th>Members</th>
+			<th>Description</th>
 
 			{% for line in group_list %}
 			<tr>
@@ -127,7 +128,11 @@
 							<a href="{{url_for('view_user', user=member.username)}}">{{member.first_name}} {{member.last_name}}</a>
 						{% endif %}
 					{% endfor %}
-				</td>
+					{% for entry in info %}
+						{% if entry.group_name == line.group_name and entry.username == line.username_creator %}
+							<td>{{entry.description}}</td>
+						{% endif %}
+					{% endfor %}
 			</tr>
 			{% endfor %}
 		</table>
